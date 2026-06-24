@@ -90,6 +90,10 @@
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th.th-sort { cursor: pointer; user-select: none; transition: color 0.15s; }
+  th.th-sort:hover { color: var(--text); }
+  th.th-sort-active { color: var(--accent); }
+  .sort-arrow { font-size: 10px; margin-left: 4px; opacity: 0.6; }
   tbody tr { border-bottom: 1px solid rgba(46,50,80,0.5); transition: background 0.1s; }
   tbody tr:hover { background: var(--surface2); }
   tbody td { padding: 10px 12px; white-space: nowrap; }
@@ -727,12 +731,36 @@ function chartOpts({ stacked = false, horizontal = false, suffix = '' } = {}) {
   };
 }
 
+// ─── Sortable Table Helpers ───────────────────────────────────────────────────
+// sortState[tableId] = { col: 'ratio', dir: -1 }  (-1 = desc, 1 = asc)
+const sortState = {};
+
+function thSort(tableId, col, label) {
+  const s = sortState[tableId] || {};
+  const active = s.col === col;
+  const dir = active ? s.dir : 0;
+  const arrow = active ? (dir === -1 ? ' ▼' : ' ▲') : ' ⇅';
+  return `<th class="th-sort${active ? ' th-sort-active' : ''}" onclick="sortTable('${tableId}','${col}')">${label}<span class="sort-arrow">${arrow}</span></th>`;
+}
+
+function sortTable(tableId, col) {
+  const s = sortState[tableId] || { col: null, dir: -1 };
+  if (s.col === col) {
+    s.dir = s.dir === -1 ? 1 : -1;
+  } else {
+    s.col = col;
+    s.dir = -1;
+  }
+  sortState[tableId] = s;
+  if (tableId === 'agentTable') renderAgentTable(_lastRows);
+  if (tableId === 'stateTable') renderStateTable(_lastRows);
+}
+
 // ─── Agent Rankings Table ─────────────────────────────────────────────────────
 function switchTab(tab) {
   activeTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
-  // Re-render with current filtered data — grab from last render
   renderAgentTable(_lastRows);
 }
 
@@ -750,36 +778,40 @@ function renderAgentTable(rows) {
     agentBuckets[a].enrolled++;
     if (colMap.droppedDate && r[colMap.droppedDate] && r[colMap.droppedDate].trim()) agentBuckets[a].cancelled++;
   }
-  const agents = Object.entries(agentBuckets).map(([name, d]) => ({
+  let agents = Object.entries(agentBuckets).map(([name, d]) => ({
     name, enrolled: d.enrolled, cancelled: d.cancelled,
     active: d.enrolled - d.cancelled,
     ratio: d.enrolled > 0 ? d.cancelled / d.enrolled : 0
   }));
 
-  const sortFns = {
-    enrolled: (a,b) => b.enrolled - a.enrolled,
-    cancelled: (a,b) => b.cancelled - a.cancelled,
-    ratio: (a,b) => b.ratio - a.ratio,
-  };
-  agents.sort(sortFns[activeTab]);
+  // Tab default sort (overridden by column header clicks)
+  const tabDefaults = { enrolled: 'enrolled', cancelled: 'cancelled', ratio: 'ratio' };
+  const s = sortState['agentTable'];
+  const sortCol = s ? s.col : tabDefaults[activeTab];
+  const sortDir = s ? s.dir : -1;
+  agents.sort((a, b) => {
+    const av = typeof a[sortCol] === 'string' ? a[sortCol].toLowerCase() : a[sortCol];
+    const bv = typeof b[sortCol] === 'string' ? b[sortCol].toLowerCase() : b[sortCol];
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
 
-  const maxEnrolled = Math.max(...agents.map(a => a.enrolled));
-  const maxCancelled = Math.max(...agents.map(a => a.cancelled));
+  const maxEnrolled = Math.max(...agents.map(a => a.enrolled), 1);
+  const maxCancelled = Math.max(...agents.map(a => a.cancelled), 1);
 
+  const TH = (col, label) => thSort('agentTable', col, label);
   let html = `<table><thead><tr>
-    <th>#</th><th>Agent</th>
-    <th>Enrolled</th><th>Active</th><th>Cancelled</th><th>Cancel Rate</th>
+    <th>#</th>${TH('name','Agent')}${TH('enrolled','Enrolled')}${TH('active','Active')}${TH('cancelled','Cancelled')}${TH('ratio','Cancel Rate')}
   </tr></thead><tbody>`;
   agents.forEach((a, i) => {
     const ratioClass = a.ratio > 0.4 ? 'badge-red' : a.ratio > 0.2 ? 'badge-orange' : 'badge-teal';
-    const barW = e => Math.round((e / maxEnrolled) * 80);
-    const barWC = e => Math.round((e / (maxCancelled||1)) * 80);
+    const barW  = Math.round((a.enrolled  / maxEnrolled)  * 80);
+    const barWC = Math.round((a.cancelled / maxCancelled) * 80);
     html += `<tr>
       <td class="rank">${i+1}</td>
       <td><b>${a.name}</b></td>
-      <td><div class="bar-cell"><div class="mini-bar" style="width:${barW(a.enrolled)}px"></div>${a.enrolled}</div></td>
+      <td><div class="bar-cell"><div class="mini-bar" style="width:${barW}px"></div>${a.enrolled}</div></td>
       <td>${a.active}</td>
-      <td><div class="bar-cell"><div class="mini-bar mini-bar-red" style="width:${barWC(a.cancelled)}px"></div>${a.cancelled}</div></td>
+      <td><div class="bar-cell"><div class="mini-bar mini-bar-red" style="width:${barWC}px"></div>${a.cancelled}</div></td>
       <td><span class="badge ${ratioClass}">${(a.ratio*100).toFixed(1)}%</span></td>
     </tr>`;
   });
@@ -800,17 +832,27 @@ function renderStateTable(rows) {
     buckets[s].enrolled++;
     if (colMap.droppedDate && r[colMap.droppedDate] && r[colMap.droppedDate].trim()) buckets[s].cancelled++;
   }
-  const states = Object.entries(buckets).map(([state, d]) => ({
+  let states = Object.entries(buckets).map(([state, d]) => ({
     state, enrolled: d.enrolled, cancelled: d.cancelled,
     active: d.enrolled - d.cancelled,
     ratio: d.enrolled > 0 ? d.cancelled / d.enrolled : 0
-  })).sort((a,b) => b.cancelled - a.cancelled);
+  }));
 
-  const maxC = Math.max(...states.map(s => s.cancelled));
-  let html = `<table><thead><tr><th>#</th><th>State</th><th>Total Enrolled</th><th>Active</th><th>Cancelled</th><th>Cancel Rate</th></tr></thead><tbody>`;
+  const s = sortState['stateTable'] || { col: 'cancelled', dir: -1 };
+  states.sort((a, b) => {
+    const av = typeof a[s.col] === 'string' ? a[s.col].toLowerCase() : a[s.col];
+    const bv = typeof b[s.col] === 'string' ? b[s.col].toLowerCase() : b[s.col];
+    return av < bv ? s.dir : av > bv ? -s.dir : 0;
+  });
+
+  const maxC = Math.max(...states.map(x => x.cancelled), 1);
+  const TH = (col, label) => thSort('stateTable', col, label);
+  let html = `<table><thead><tr>
+    <th>#</th>${TH('state','State')}${TH('enrolled','Total Enrolled')}${TH('active','Active')}${TH('cancelled','Cancelled')}${TH('ratio','Cancel Rate')}
+  </tr></thead><tbody>`;
   states.forEach((s, i) => {
     const cls = s.ratio > 0.4 ? 'badge-red' : s.ratio > 0.2 ? 'badge-orange' : 'badge-teal';
-    const bw = Math.round((s.cancelled/(maxC||1))*80);
+    const bw = Math.round((s.cancelled / maxC) * 80);
     html += `<tr>
       <td class="rank">${i+1}</td>
       <td><b>${s.state}</b></td>

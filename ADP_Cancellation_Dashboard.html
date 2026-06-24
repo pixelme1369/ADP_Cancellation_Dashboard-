@@ -336,15 +336,17 @@ function loadFile(file){
 /* ── Filters ── */
 function initFilters(){
   const stateSet=new Set(), agentSet=new Set();
-  let minDate='', maxDate='';
+  let minTs=Infinity, maxTs=-Infinity;
   rawRows.forEach(r=>{
     if(colMap.state&&r[colMap.state]) stateSet.add(r[colMap.state].trim());
     if(colMap.agent&&r[colMap.agent]) agentSet.add(r[colMap.agent].trim());
     if(colMap.enrolledDate){
-      const d=(r[colMap.enrolledDate]||'').trim().slice(0,10);
-      if(d){if(!minDate||d<minDate)minDate=d;if(!maxDate||d>maxDate)maxDate=d}
+      const d=parseDate(r[colMap.enrolledDate]);
+      if(d){const t=d.getTime();if(t<minTs)minTs=t;if(t>maxTs)maxTs=t}
     }
   });
+  const toISO=ts=>ts===Infinity||ts===-Infinity?'':new Date(ts).toISOString().slice(0,10);
+  const minDate=toISO(minTs), maxDate=toISO(maxTs);
 
   /* Clear date inputs so browser autocomplete / stale values don't filter out all data */
   document.getElementById('f_from').value='';
@@ -375,10 +377,15 @@ function applyFilters(){
   const to=document.getElementById('f_to').value;
   const state=document.getElementById('f_state').value;
   const agent=document.getElementById('f_agent').value;
+  const fromTs=from?new Date(from).getTime():null;
+  const toTs=to?new Date(to+' 23:59:59').getTime():null;
   const rows=rawRows.filter(r=>{
-    const ed=r[colMap.enrolledDate]?.trim()||'';
-    if(from&&ed<from)return false;
-    if(to&&ed>to)return false;
+    if(fromTs||toTs){
+      const d=parseDate(r[colMap.enrolledDate]);
+      const ts=d?d.getTime():null;
+      if(fromTs&&(!ts||ts<fromTs))return false;
+      if(toTs&&(!ts||ts>toTs))return false;
+    }
     if(state&&(r[colMap.state]||'').trim()!==state)return false;
     if(agent&&(r[colMap.agent]||'').trim()!==agent)return false;
     return true;
@@ -391,7 +398,20 @@ function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'
 function fmtDollar(n){return '$'+(n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':n.toFixed(0))}
 function pct(a,b){return b?((a/b)*100).toFixed(1)+'%':'—'}
 function rateBadge(r){const cl=r>=0.4?'high':r>=0.2?'mid':'low';return`<span class="rate-badge ${cl}">${(r*100).toFixed(1)}%</span>`}
-function parseDate(s){if(!s)return null;const d=new Date(s.trim());return isNaN(d)?null:d}
+function parseDate(s){
+  if(!s)return null;
+  s=s.trim();
+  /* Handle M/D/YY and M/D/YYYY (CRM export format like "6/19/26 13:25" or "6/19/26") */
+  const mdy=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if(mdy){
+    let yr=+mdy[3];
+    if(yr<100)yr+=2000;
+    const d=new Date(yr,+mdy[1]-1,+mdy[2]);
+    return isNaN(d)?null:d;
+  }
+  const d=new Date(s);
+  return isNaN(d)?null:d;
+}
 function monthKey(d){return d?d.toISOString().slice(0,7):null}
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
 function chartEmpty(id,msg){

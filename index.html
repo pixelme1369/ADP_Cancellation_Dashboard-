@@ -125,6 +125,22 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Chart empty overlay */
+  .chart-wrap, .chart-wrap-tall { position: relative; }
+  .chart-empty-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-size: 13px; text-align: center; background: rgba(15,17,23,0.55); border-radius: 8px; pointer-events: none; }
+  .chart-empty-overlay svg { opacity: 0.4; }
+  .chart-empty-overlay p { max-width: 240px; line-height: 1.5; opacity: 0.7; }
+
+  /* Column mapping panel */
+  .colmap-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 20px; }
+  .colmap-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
+  .colmap-hint { font-weight: 400; color: var(--text-muted); }
+  .colmap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .colmap-row { display: flex; flex-direction: column; gap: 4px; }
+  .colmap-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); font-weight: 600; }
+  .colmap-sel { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 7px; font-size: 12px; outline: none; }
+  .colmap-sel:focus { border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -175,6 +191,9 @@
     <button class="btn-reset" onclick="resetFilters()">Reset Filters</button>
     <button class="btn-upload-new" onclick="uploadNew()">Upload New CSV</button>
   </div>
+
+  <!-- Column Mapping -->
+  <div class="colmap-panel" id="colMapPanel"></div>
 
   <!-- File Info -->
   <div class="file-info" id="fileInfo"></div>
@@ -272,12 +291,12 @@
 <script>
 // ─── Column Detection ───────────────────────────────────────────────────────
 const FIELD_PATTERNS = {
-  agent:        [/agent\s*name/i, /agent/i, /rep\s*name/i, /sales\s*rep/i],
-  createdDate:  [/created\s*date/i, /create\s*date/i, /date\s*created/i],
-  enrolledDate: [/cordoba\s*enroll/i, /enroll.*date/i, /enrolled.*date/i, /date.*enroll/i],
-  droppedDate:  [/cordoba\s*drop/i, /drop.*date/i, /dropped.*date/i, /cancel.*date/i, /date.*drop/i, /date.*cancel/i],
-  debtAmount:   [/debt\s*amount/i, /enrolled\s*debt/i, /total\s*debt/i, /amount/i],
-  state:        [/^state$/i, /client\s*state/i, /state\s*of/i],
+  agent:        [/agent\s*name/i, /agent/i, /rep\s*name/i, /sales\s*rep/i, /closer/i, /advisor/i],
+  createdDate:  [/created\s*date/i, /create\s*date/i, /date\s*created/i, /lead\s*date/i],
+  enrolledDate: [/cordoba\s*enroll/i, /enroll.*date/i, /enrolled.*date/i, /date.*enroll/i, /start\s*date/i, /service\s*date/i, /program\s*start/i],
+  droppedDate:  [/cordoba\s*drop/i, /drop.*date/i, /dropped.*date/i, /cancel.*date/i, /date.*drop/i, /date.*cancel/i, /term.*date/i, /termination/i, /exit\s*date/i, /left\s*date/i],
+  debtAmount:   [/debt\s*amount/i, /enrolled\s*debt/i, /total\s*debt/i, /amount/i, /balance/i],
+  state:        [/^state$/i, /client\s*state/i, /state\s*of/i, /\bst\b/i, /province/i, /location/i],
 };
 
 function detectColumns(headers) {
@@ -291,6 +310,37 @@ function detectColumns(headers) {
     }
   }
   return map;
+}
+
+let allHeaders = [];
+
+function buildColMapPanel() {
+  const LABELS = {
+    enrolledDate: 'Cordoba Enrolled Date *',
+    droppedDate:  'Cordoba Dropped Date (cancel)',
+    agent:        'Agent Name',
+    state:        'State',
+    createdDate:  'Created Date',
+    debtAmount:   'Debt / Enrolled Amount',
+  };
+  const panel = document.getElementById('colMapPanel');
+  let html = `<div class="colmap-title">Column Mapping <span class="colmap-hint">— auto-detected from your headers. Fix any that are wrong.</span></div><div class="colmap-grid">`;
+  for (const [field, label] of Object.entries(LABELS)) {
+    html += `<div class="colmap-row">
+      <label class="colmap-label">${label}</label>
+      <select class="colmap-sel" data-field="${field}" onchange="overrideCol('${field}', this.value)">
+        <option value="">— not mapped —</option>
+        ${allHeaders.map(h => `<option value="${h}" ${colMap[field]===h?'selected':''}>${h}</option>`).join('')}
+      </select>
+    </div>`;
+  }
+  html += `</div>`;
+  panel.innerHTML = html;
+}
+
+function overrideCol(field, value) {
+  colMap[field] = value || undefined;
+  applyFilters();
 }
 
 // ─── Globals ────────────────────────────────────────────────────────────────
@@ -323,7 +373,8 @@ function handleFile(file) {
         return;
       }
       rawRows = result.data;
-      showDashboard(result.meta.fields);
+      allHeaders = result.meta.fields || [];
+      showDashboard(allHeaders);
     }
   });
 }
@@ -332,6 +383,7 @@ function showDashboard(headers) {
   document.getElementById('uploadSection').style.display = 'none';
   const dash = document.getElementById('dashboard');
   dash.classList.add('visible');
+  buildColMapPanel();
   populateFilterDropdowns();
   applyFilters();
 }
@@ -436,6 +488,22 @@ function renderDashboard(rows) {
 // ─── Chart Helpers ────────────────────────────────────────────────────────────
 function destroyChart(id) {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  // clear any empty-state overlay
+  const wrap = document.getElementById('canvas-wrap-' + id);
+  if (wrap) { const ov = wrap.querySelector('.chart-empty-overlay'); if (ov) ov.remove(); }
+}
+
+function chartEmpty(canvasId, msg) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const wrap = canvas.parentElement;
+  let ov = wrap.querySelector('.chart-empty-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.className = 'chart-empty-overlay';
+    wrap.appendChild(ov);
+  }
+  ov.innerHTML = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>${msg}</p>`;
 }
 
 const PALETTE = ['#6c63ff','#00d4aa','#ff5b5b','#f5a623','#a855f7','#00a8e8','#ff9500','#34d399','#f87171','#60a5fa'];
@@ -510,7 +578,11 @@ function renderRatioTrendChart(rows) {
 function renderStateCharts(rows) {
   destroyChart('stateCancel');
   destroyChart('stateRatio');
-  if (!colMap.state) return;
+  if (!colMap.state) {
+    chartEmpty('chartStateCancel', 'State column not mapped.<br>Use the Column Mapping panel above to assign it.');
+    chartEmpty('chartStateRatio',  'State column not mapped.<br>Use the Column Mapping panel above to assign it.');
+    return;
+  }
 
   const stateBuckets = {};
   for (const r of rows) {
@@ -535,6 +607,12 @@ function renderStateCharts(rows) {
     },
     options: chartOpts({ horizontal: true })
   });
+
+  if (!colMap.droppedDate) {
+    chartEmpty('chartStateCancel', 'Dropped/cancelled date column not mapped.<br>Use the Column Mapping panel above.');
+    chartEmpty('chartStateRatio',  'Dropped/cancelled date column not mapped.<br>Use the Column Mapping panel above.');
+    return;
+  }
 
   // Sort by ratio for ratio chart
   const sortedRatio = Object.entries(stateBuckets)
@@ -574,17 +652,24 @@ function renderDowCharts(rows) {
     options: chartOpts()
   });
   const ctx2 = document.getElementById('chartDowCancel').getContext('2d');
-  charts.dowCancel = new Chart(ctx2, {
-    type: 'bar',
-    data: { labels: DAYS, datasets: [{ label: 'Cancellations', data: cancelDow, backgroundColor: 'rgba(255,91,91,0.7)', borderRadius: 4 }] },
-    options: chartOpts()
-  });
+  if (!colMap.droppedDate) {
+    chartEmpty('chartDowCancel', 'Dropped/cancelled date not mapped.<br>Use the Column Mapping panel above.');
+  } else {
+    charts.dowCancel = new Chart(ctx2, {
+      type: 'bar',
+      data: { labels: DAYS, datasets: [{ label: 'Cancellations', data: cancelDow, backgroundColor: 'rgba(255,91,91,0.7)', borderRadius: 4 }] },
+      options: chartOpts()
+    });
+  }
 }
 
 // ─── Duration to Cancel ───────────────────────────────────────────────────────
 function renderDurationChart(cancelled) {
   destroyChart('duration');
-  if (!colMap.droppedDate) return;
+  if (!colMap.droppedDate) {
+    chartEmpty('chartDuration', 'Dropped/cancelled date column not mapped.<br>Use the Column Mapping panel above to assign it.');
+    return;
+  }
   const durations = [];
   for (const r of cancelled) {
     const ed = parseDate(r[colMap.enrolledDate]);
@@ -594,7 +679,10 @@ function renderDurationChart(cancelled) {
       if (days >= 0) durations.push(days);
     }
   }
-  if (durations.length === 0) return;
+  if (durations.length === 0) {
+    chartEmpty('chartDuration', 'No rows have both an enrolled date and a dropped date.<br>Check your column mapping.');
+    return;
+  }
   // Bucket into ranges
   const buckets = { '0-7':0,'8-30':0,'31-60':0,'61-90':0,'91-180':0,'181-365':0,'365+':0 };
   for (const d of durations) {

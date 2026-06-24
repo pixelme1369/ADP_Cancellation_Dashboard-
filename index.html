@@ -299,7 +299,8 @@ const FIELD_PATTERNS = {
 };
 
 function cleanHeader(h) {
-  return h.replace(/[​-‍﻿ ]/g, '').trim();
+  // Strip BOM/zero-width chars only, preserve regular spaces
+  return h.replace(/[​‌‍﻿ ]/g, '').trim();
 }
 
 function detectColumns(headers) {

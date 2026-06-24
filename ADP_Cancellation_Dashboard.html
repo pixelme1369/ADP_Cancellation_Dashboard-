@@ -7,151 +7,123 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3250;
-    --accent: #6c63ff;
-    --accent2: #00d4aa;
-    --danger: #ff5b5b;
-    --warning: #f5a623;
-    --text: #e8eaf6;
-    --muted: #8892b0;
-    --radius: 12px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+:root {
+  --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a; --border:#2e3250;
+  --accent:#6c63ff; --accent2:#00d4aa; --danger:#ff5b5b; --warning:#f5a623;
+  --text:#e8eaf6; --muted:#8892b0; --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;min-height:100vh}
 
-  /* ── Header ── */
-  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; gap: 14px; }
-  .logo { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; flex-shrink: 0; }
-  .header h1 { font-size: 18px; font-weight: 700; }
-  .header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+/* Header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;gap:14px}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+.header h1{font-size:18px;font-weight:700}
+.header p{font-size:12px;color:var(--muted);margin-top:2px}
 
-  /* ── Upload ── */
-  .upload-section { padding: 40px 28px; }
-  .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 60px 40px; text-align: center; cursor: pointer; transition: all .2s; background: var(--surface); }
-  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(108,99,255,.06); }
-  .drop-zone svg { width: 48px; height: 48px; color: var(--accent); margin-bottom: 16px; }
-  .drop-zone h2 { font-size: 18px; margin-bottom: 8px; }
-  .drop-zone p { color: var(--muted); font-size: 14px; }
-  .btn-upload { margin-top: 20px; display: inline-block; background: var(--accent); color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; }
-  #fileInput { display: none; }
+/* Upload */
+.upload-section{padding:60px 28px}
+.drop-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:70px 40px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);max-width:600px;margin:0 auto}
+.drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(108,99,255,.06)}
+.drop-zone svg{width:48px;height:48px;color:var(--accent);margin-bottom:16px}
+.drop-zone h2{font-size:18px;margin-bottom:8px}
+.drop-zone p{color:var(--muted);font-size:14px}
+.btn-upload{margin-top:20px;display:inline-block;background:var(--accent);color:#fff;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer}
+#fileInput{display:none}
 
-  /* ── Dashboard ── */
-  .dashboard { display: none; padding: 24px 28px; }
-  .dashboard.visible { display: block; }
+/* Dashboard */
+.dashboard{display:none;padding:24px 28px 60px}
+.dashboard.visible{display:block}
 
-  /* ── Toolbar ── */
-  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; align-items: flex-end; }
-  .fg { display: flex; flex-direction: column; gap: 4px; }
-  .fg label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
-  .fg input, .fg select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none; }
-  .fg input:focus, .fg select:focus { border-color: var(--accent); }
-  .btn-sm { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer; align-self: flex-end; transition: .15s; }
-  .btn-sm:hover { color: var(--text); border-color: var(--accent); }
-  .btn-sm.accent { color: var(--accent); font-weight: 600; }
+/* Toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:28px;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.fg input,.fg select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:8px;font-size:13px;outline:none}
+.fg input:focus,.fg select:focus{border-color:var(--accent)}
+.btn-reset{background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;align-self:flex-end}
+.btn-reset:hover{border-color:var(--accent);color:var(--text)}
 
-  /* ── KPI Grid ── */
-  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; margin-bottom: 28px; }
-  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 24px; position: relative; overflow: hidden; }
-  .kpi::before { content:''; position: absolute; top:0; left:0; right:0; height:3px; }
-  .kpi.k-total::before  { background: linear-gradient(90deg,var(--accent),#a855f7); }
-  .kpi.k-ratio::before  { background: linear-gradient(90deg,var(--danger),var(--warning)); }
-  .kpi.k-debt::before   { background: linear-gradient(90deg,var(--warning),#ff9500); }
-  .kpi.k-days::before   { background: linear-gradient(90deg,var(--accent2),#00a8e8); }
-  .kpi-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
-  .kpi-value { font-size: 34px; font-weight: 800; line-height: 1; }
-  .kpi.k-total .kpi-value { color: var(--accent); }
-  .kpi.k-ratio .kpi-value { color: var(--danger); }
-  .kpi.k-debt  .kpi-value { color: var(--warning); }
-  .kpi.k-days  .kpi-value { color: var(--accent2); }
-  .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+/* Section label & Finding title */
+.section-label{font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.finding-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:20px;line-height:1.3}
+.finding-title span{color:var(--muted);font-weight:400;font-size:14px;margin-right:8px}
 
-  /* ── Insights ── */
-  .insight-row { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 12px; margin-bottom: 28px; }
-  .insight { background: var(--surface); border-left: 4px solid; border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 16px; font-size: 13px; line-height: 1.55; }
-  .insight b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 5px; }
-  .insight.i-red    { border-color: var(--danger);  }  .insight.i-red b  { color: var(--danger);  }
-  .insight.i-amber  { border-color: var(--warning); }  .insight.i-amber b{ color: var(--warning); }
-  .insight.i-green  { border-color: var(--accent2); }  .insight.i-green b{ color: var(--accent2); }
-  .insight.i-purple { border-color: var(--accent);  }  .insight.i-purple b{ color: var(--accent); }
-  .insight p { color: var(--muted); }
-  .insight p span { color: var(--text); font-weight: 600; }
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px}
+.kpi-card{background:var(--surface);padding:20px 22px}
+.kpi-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:6px}
+.kpi-value{font-size:32px;font-weight:800;line-height:1;margin-bottom:4px}
+.kpi-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.kpi-sub b{color:var(--text)}
+.kpi-card.danger .kpi-value{color:var(--danger)}
+.kpi-card.warning .kpi-value{color:var(--warning)}
+.kpi-card.good .kpi-value{color:var(--accent2)}
 
-  /* ── Baseline box ── */
-  .baseline { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px; }
-  .baseline h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
-  .baseline p { font-size: 13px; color: var(--muted); line-height: 1.7; }
-  .baseline p span { color: var(--text); font-weight: 600; }
-  .delta-up   { color: var(--danger) !important; }
-  .delta-down { color: var(--accent2) !important; }
+/* Card / panel */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+.card-inner{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px}
 
-  /* ── Layout ── */
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-  .one-col  { margin-bottom: 24px; }
-  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
-  .section-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink:0; }
-  .d-purple{background:var(--accent);} .d-teal{background:var(--accent2);} .d-red{background:var(--danger);} .d-orange{background:var(--warning);}
+/* Two-col layout */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px}
 
-  /* ── Charts ── */
-  .chart-wrap      { position: relative; height: 280px; }
-  .chart-wrap-tall { position: relative; height: 360px; }
-  .chart-empty { position: absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); font-size:13px; text-align:center; background:rgba(15,17,23,.5); border-radius:8px; pointer-events:none; }
-  .chart-empty p { max-width:220px; line-height:1.5; opacity:.7; }
+/* Section wrapper */
+.section{margin-bottom:28px}
 
-  /* ── Heatmap ── */
-  .heatmap-wrap { overflow-x: auto; }
-  .heatmap-table { width:100%; border-collapse:collapse; font-size:12px; }
-  .heatmap-table th { padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; }
-  .heatmap-table th.row-header { text-align:left; }
-  .heatmap-table td { padding:10px 12px; text-align:center; font-weight:700; font-size:13px; border-bottom:1px solid rgba(46,50,80,.4); border-right:1px solid rgba(46,50,80,.4); }
-  .heatmap-table td.row-label { text-align:left; font-weight:600; color:var(--muted); font-size:12px; }
-  .heatmap-table .hl-n  { color:var(--muted); font-weight:400; font-size:11px; display:block; }
+/* Campaign inline bars */
+.camp-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.camp-row:last-child{border-bottom:none}
+.camp-name{flex:0 0 160px;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.camp-bar-wrap{flex:1;background:var(--surface2);border-radius:4px;height:8px;overflow:hidden}
+.camp-bar{height:8px;border-radius:4px}
+.camp-pct{flex:0 0 40px;font-size:12px;color:var(--muted);text-align:right}
+.camp-n{flex:0 0 50px;font-size:11px;color:var(--muted);text-align:right}
 
-  /* ── Campaign bars ── */
-  .camp-list { display:flex; flex-direction:column; gap:8px; }
-  .camp-row { display:flex; align-items:center; gap:10px; }
-  .camp-name { width:170px; font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex-shrink:0; }
-  .camp-bar-wrap { flex:1; background:rgba(46,50,80,.5); border-radius:4px; height:20px; position:relative; }
-  .camp-bar { height:100%; border-radius:4px; min-width:3px; }
-  .camp-pct { position:absolute; right:6px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:700; }
-  .camp-n { width:56px; text-align:right; font-size:11px; color:var(--muted); flex-shrink:0; }
+/* Callout boxes */
+.callout-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.callout{background:var(--surface2);border-left:3px solid var(--accent);border-radius:6px;padding:12px 14px}
+.callout.danger{border-left-color:var(--danger)}
+.callout.good{border-left-color:var(--accent2)}
+.callout .c-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.callout .c-value{font-size:20px;font-weight:800;color:var(--text)}
+.callout .c-desc{font-size:12px;color:var(--muted);margin-top:3px}
 
-  /* ── Day buckets ── */
-  .day-buckets { display:flex; gap:8px; flex-wrap:wrap; }
-  .day-bucket { flex:1; min-width:80px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 10px; text-align:center; }
-  .day-bucket.highlight { border-color:var(--warning); background:rgba(245,166,35,.07); }
-  .db-label { font-size:11px; color:var(--muted); margin-bottom:6px; }
-  .db-value { font-size:22px; font-weight:800; }
-  .db-pct   { font-size:11px; color:var(--muted); margin-top:4px; }
-  .day-bucket.highlight .db-value { color:var(--warning); }
-  .window-note { margin-top:12px; font-size:12px; color:var(--warning); }
+/* Heatmap */
+.heatmap-wrap{overflow-x:auto}
+.heatmap{border-collapse:collapse;font-size:11px;width:100%}
+.heatmap th{padding:5px 8px;color:var(--muted);font-weight:600;text-align:center;background:var(--surface2)}
+.heatmap th.row-hd{text-align:left;width:90px}
+.heatmap td{padding:5px 8px;text-align:center;border:1px solid var(--border);font-size:11px}
 
-  /* ── Tables ── */
-  .table-wrap { overflow-x:auto; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  thead th { text-align:left; padding:10px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); font-weight:600; border-bottom:1px solid var(--border); white-space:nowrap; cursor:pointer; user-select:none; transition:color .15s; }
-  thead th:hover { color:var(--text); }
-  thead th.active { color:var(--accent); }
-  .sort-arr { font-size:9px; margin-left:3px; }
-  tbody tr { border-bottom:1px solid rgba(46,50,80,.5); transition:background .1s; }
-  tbody tr:hover { background:var(--surface2); }
-  tbody td { padding:10px 12px; white-space:nowrap; }
-  .rank { color:var(--muted); font-weight:700; }
-  .badge { display:inline-block; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:700; }
-  .b-green  { background:rgba(0,212,170,.15); color:var(--accent2); }
-  .b-amber  { background:rgba(245,166,35,.15); color:var(--warning); }
-  .b-red    { background:rgba(255,91,91,.15);  color:var(--danger); }
-  .bar-cell { display:flex; align-items:center; gap:8px; }
-  .mini-bar { height:6px; border-radius:3px; min-width:2px; }
+/* Patterns summary */
+.patterns-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:28px}
+.pattern{border-radius:8px;padding:16px 18px;border-left:4px solid transparent}
+.pattern.p-red{background:rgba(255,91,91,.08);border-left-color:var(--danger)}
+.pattern.p-amber{background:rgba(245,166,35,.08);border-left-color:var(--warning)}
+.pattern.p-green{background:rgba(0,212,170,.08);border-left-color:var(--accent2)}
+.pattern.p-purple{background:rgba(108,99,255,.08);border-left-color:var(--accent)}
+.pattern .p-title{font-size:13px;font-weight:700;margin-bottom:5px}
+.pattern .p-body{font-size:12px;color:var(--muted);line-height:1.6}
 
-  ::-webkit-scrollbar { width:6px; height:6px; }
-  ::-webkit-scrollbar-track { background:transparent; }
-  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+/* Tables */
+.tbl-wrap{overflow-x:auto}
+table.dash-tbl{width:100%;border-collapse:collapse;font-size:13px}
+table.dash-tbl th{padding:10px 14px;text-align:left;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap}
+table.dash-tbl th:hover{color:var(--text)}
+table.dash-tbl td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+table.dash-tbl tr:last-child td{border-bottom:none}
+table.dash-tbl tr:hover td{background:rgba(108,99,255,.04)}
+.sort-icon{margin-left:4px;opacity:.5}
+.sort-icon.active{opacity:1;color:var(--accent)}
+.rate-badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+.rate-badge.high{background:rgba(255,91,91,.18);color:#ff9090}
+.rate-badge.mid{background:rgba(245,166,35,.18);color:#ffc96b}
+.rate-badge.low{background:rgba(0,212,170,.18);color:#00d4aa}
+
+/* Chart container */
+.chart-wrap{position:relative}
+.chart-empty-msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);background:rgba(15,17,23,.7);border-radius:8px;pointer-events:none}
 </style>
 </head>
 <body>
@@ -159,704 +131,683 @@
 <div class="header">
   <div class="logo">ADP</div>
   <div>
-    <h1>Cancellation Dashboard</h1>
-    <p>Cordoba enrollment &amp; cancellation analysis — 8-analysis framework</p>
+    <h1>ADP Cancellation Dashboard</h1>
+    <p>Cordoba enrollment & cancellation analysis</p>
   </div>
 </div>
 
 <!-- Upload -->
 <div class="upload-section" id="uploadSection">
   <div class="drop-zone" id="dropZone">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-      <polyline points="17 8 12 3 7 8"/>
-      <line x1="12" y1="3" x2="12" y2="15"/>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
     </svg>
-    <h2>Upload your CRM export</h2>
-    <p>Drag &amp; drop your CSV file here, or click to browse</p>
-    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">Choose CSV File</button>
+    <h2>Drop your CRM CSV export here</h2>
+    <p>Only rows with a <strong>Cordoba Enrolled Date</strong> are analysed</p>
+    <button class="btn-upload" onclick="document.getElementById('fileInput').click()">Choose file</button>
     <input type="file" id="fileInput" accept=".csv">
   </div>
 </div>
 
 <!-- Dashboard -->
 <div class="dashboard" id="dashboard">
-
   <!-- Toolbar -->
   <div class="toolbar">
-    <div class="fg"><label>Enrolled From</label><input type="date" id="dateFrom"></div>
-    <div class="fg"><label>Enrolled To</label><input type="date" id="dateTo"></div>
-    <div class="fg"><label>State</label><select id="stateFilter"><option value="">All States</option></select></div>
-    <div class="fg"><label>Agent</label><select id="agentFilter"><option value="">All Agents</option></select></div>
-    <div class="fg"><label>Campaign</label><select id="campFilter"><option value="">All Campaigns</option></select></div>
-    <button class="btn-sm" onclick="resetFilters()">Reset</button>
-    <button class="btn-sm accent" onclick="uploadNew()">New CSV</button>
+    <div class="fg">
+      <label>Enrolled From</label>
+      <input type="date" id="f_from">
+    </div>
+    <div class="fg">
+      <label>Enrolled To</label>
+      <input type="date" id="f_to">
+    </div>
+    <div class="fg">
+      <label>State</label>
+      <select id="f_state"><option value="">All States</option></select>
+    </div>
+    <div class="fg">
+      <label>Agent</label>
+      <select id="f_agent"><option value="">All Agents</option></select>
+    </div>
+    <button class="btn-reset" id="btnReset">Reset Filters</button>
   </div>
 
-  <!-- 1. Portfolio Overview KPIs -->
-  <div class="kpi-grid">
-    <div class="kpi k-total">
-      <div class="kpi-label">Total Enrolled</div>
-      <div class="kpi-value" id="kpiTotal">—</div>
-      <div class="kpi-sub">rows with enrolled date</div>
+  <!-- KPI -->
+  <div class="section-label">PORTFOLIO OVERVIEW</div>
+  <div class="kpi-grid" id="kpiGrid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Analysed</div>
+      <div class="kpi-value" id="kpi-total">—</div>
+      <div class="kpi-sub" id="kpi-total-sub">rows with enrolled date</div>
     </div>
-    <div class="kpi k-ratio">
-      <div class="kpi-label">Cancel Ratio</div>
-      <div class="kpi-value" id="kpiRatio">—</div>
-      <div class="kpi-sub">cancelled ÷ total enrolled</div>
+    <div class="kpi-card good">
+      <div class="kpi-label">Active Enrolled</div>
+      <div class="kpi-value" id="kpi-active">—</div>
+      <div class="kpi-sub" id="kpi-active-sub">currently enrolled</div>
     </div>
-    <div class="kpi k-debt">
-      <div class="kpi-label">Debt Lost</div>
-      <div class="kpi-value" id="kpiDebt">—</div>
-      <div class="kpi-sub">enrolled debt of cancelled clients</div>
+    <div class="kpi-card danger">
+      <div class="kpi-label">Cancelled</div>
+      <div class="kpi-value" id="kpi-cancelled">—</div>
+      <div class="kpi-sub" id="kpi-cancelled-sub">have a dropped date</div>
     </div>
-    <div class="kpi k-days">
-      <div class="kpi-label">Median Days to Drop</div>
-      <div class="kpi-value" id="kpiDays">—</div>
-      <div class="kpi-sub">enrolled → cancelled</div>
+    <div class="kpi-card warning">
+      <div class="kpi-label">Cancellation Rate</div>
+      <div class="kpi-value" id="kpi-rate">—</div>
+      <div class="kpi-sub" id="kpi-rate-sub">of enrolled clients</div>
     </div>
   </div>
 
-  <!-- 8. Key Patterns Summary -->
-  <div class="section-title" style="margin-bottom:12px"><span class="dot d-purple"></span>Key Patterns</div>
-  <div class="insight-row" id="insightRow"></div>
-
-  <!-- Baseline Comparison -->
-  <div class="baseline" id="baselineBox" style="display:none">
-    <h3>vs. June 2026 Baseline</h3>
-    <p id="baselineText"></p>
+  <!-- Finding 1: Cohort trend -->
+  <div class="section card" id="f1-section">
+    <div class="section-label">FINDING 1</div>
+    <div class="finding-title" id="f1-title">Monthly enrollment &amp; cancellation trend</div>
+    <div class="chart-wrap"><canvas id="chartCohort" height="90"></canvas><div class="chart-empty-msg" id="chartCohort-empty" style="display:none"></div></div>
   </div>
 
-  <!-- 2. Enrollment Cohort Trend (dual-axis) -->
-  <div class="one-col">
+  <!-- Finding 2 + 3: Campaign bars | Days-to-cancel -->
+  <div class="two-col" id="f23-section">
+    <div class="card" id="f2-section">
+      <div class="section-label">FINDING 2</div>
+      <div class="finding-title" id="f2-title">Cancellation rate by source / campaign</div>
+      <div id="campBars"><div style="color:var(--muted);font-size:13px">No campaign column detected</div></div>
+    </div>
+    <div class="card" id="f3-section">
+      <div class="section-label">FINDING 3</div>
+      <div class="finding-title" id="f3-title">Time-to-cancellation distribution</div>
+      <div class="chart-wrap"><canvas id="chartDays" height="160"></canvas><div class="chart-empty-msg" id="chartDays-empty" style="display:none"></div></div>
+      <div class="callout-row" id="daysCallouts"></div>
+    </div>
+  </div>
+
+  <!-- Finding 4: Credit score + Heatmap -->
+  <div class="two-col" id="f4-section">
     <div class="card">
-      <div class="section-title"><span class="dot d-purple"></span>Enrollment Cohort Trend — Cancel Rate % &amp; Volume by Month</div>
-      <div class="chart-wrap-tall"><canvas id="chartCohort"></canvas></div>
+      <div class="section-label">FINDING 4A</div>
+      <div class="finding-title" id="f4a-title">Cancel rate by credit score band</div>
+      <div class="chart-wrap"><canvas id="chartCredit" height="180"></canvas><div class="chart-empty-msg" id="chartCredit-empty" style="display:none"></div></div>
+    </div>
+    <div class="card">
+      <div class="section-label">FINDING 4B</div>
+      <div class="finding-title" id="f4b-title">Cancel rate by state &amp; debt range (heatmap)</div>
+      <div class="heatmap-wrap"><div id="heatmapDiv" style="color:var(--muted);font-size:13px">Loading…</div></div>
     </div>
   </div>
 
-  <!-- 3. Campaign Cancel Rates + 7. Agent Cancel Rates -->
+  <!-- Finding 5: Agent chart -->
+  <div class="section card" id="f5-section">
+    <div class="section-label">FINDING 5</div>
+    <div class="finding-title" id="f5-title">Cancel rate by agent</div>
+    <div class="chart-wrap"><canvas id="chartAgent"></canvas><div class="chart-empty-msg" id="chartAgent-empty" style="display:none"></div></div>
+  </div>
+
+  <!-- Key Patterns Summary -->
+  <div class="section-label" style="margin-bottom:14px">KEY PATTERNS SUMMARY</div>
+  <div class="patterns-grid" id="patternsGrid">
+    <div class="pattern p-red"><div class="p-title">—</div><div class="p-body">Loading…</div></div>
+    <div class="pattern p-amber"><div class="p-title">—</div><div class="p-body">Loading…</div></div>
+    <div class="pattern p-green"><div class="p-title">—</div><div class="p-body">Loading…</div></div>
+    <div class="pattern p-purple"><div class="p-title">—</div><div class="p-body">Loading…</div></div>
+  </div>
+
+  <!-- Tables -->
   <div class="two-col">
     <div class="card">
-      <div class="section-title"><span class="dot d-red"></span>Campaign Cancel Rates <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">≥30 enrollments</span></div>
-      <div id="campChart"></div>
+      <div class="section-label" style="margin-bottom:12px">AGENT RANKINGS</div>
+      <div class="tbl-wrap"><table class="dash-tbl" id="tblAgent"><thead><tr>
+        <th onclick="sortTbl('tblAgent',0)">Agent<span class="sort-icon" id="si-tblAgent-0"></span></th>
+        <th onclick="sortTbl('tblAgent',1)">Enrolled<span class="sort-icon" id="si-tblAgent-1"></span></th>
+        <th onclick="sortTbl('tblAgent',2)">Active<span class="sort-icon" id="si-tblAgent-2"></span></th>
+        <th onclick="sortTbl('tblAgent',3)">Cancelled<span class="sort-icon" id="si-tblAgent-3"></span></th>
+        <th onclick="sortTbl('tblAgent',4)">Rate<span class="sort-icon" id="si-tblAgent-4"></span></th>
+      </tr></thead><tbody id="tblAgentBody"></tbody></table></div>
     </div>
     <div class="card">
-      <div class="section-title"><span class="dot d-orange"></span>Agent Cancel Rates <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:4px">≥10 enrollments, best→worst</span></div>
-      <div class="chart-wrap-tall"><canvas id="chartAgent"></canvas></div>
+      <div class="section-label" style="margin-bottom:12px">STATE BREAKDOWN</div>
+      <div class="tbl-wrap"><table class="dash-tbl" id="tblState"><thead><tr>
+        <th onclick="sortTbl('tblState',0)">State<span class="sort-icon" id="si-tblState-0"></span></th>
+        <th onclick="sortTbl('tblState',1)">Enrolled<span class="sort-icon" id="si-tblState-1"></span></th>
+        <th onclick="sortTbl('tblState',2)">Active<span class="sort-icon" id="si-tblState-2"></span></th>
+        <th onclick="sortTbl('tblState',3)">Cancelled<span class="sort-icon" id="si-tblState-3"></span></th>
+        <th onclick="sortTbl('tblState',4)">Rate<span class="sort-icon" id="si-tblState-4"></span></th>
+      </tr></thead><tbody id="tblStateBody"></tbody></table></div>
     </div>
   </div>
-
-  <!-- 4. Days-to-Cancellation + 5. Credit Score Buckets -->
-  <div class="two-col">
-    <div class="card">
-      <div class="section-title"><span class="dot d-orange"></span>Days to Cancellation Distribution</div>
-      <div id="dayBuckets"></div>
-    </div>
-    <div class="card">
-      <div class="section-title"><span class="dot d-purple"></span>Credit Score × Cancel Rate</div>
-      <div class="chart-wrap"><canvas id="chartCredit"></canvas></div>
-    </div>
-  </div>
-
-  <!-- 6. Credit Score × Monthly Income Heatmap -->
-  <div class="one-col">
-    <div class="card">
-      <div class="section-title"><span class="dot d-teal"></span>Credit Score × Monthly Income — Cancel Rate Heatmap (%)</div>
-      <div class="heatmap-wrap" id="heatmapWrap"></div>
-    </div>
-  </div>
-
-  <!-- Agent Rankings Table -->
-  <div class="one-col">
-    <div class="card">
-      <div class="section-title"><span class="dot d-purple"></span>Agent Rankings Table</div>
-      <div class="table-wrap" id="agentTable"></div>
-    </div>
-  </div>
-
-  <!-- State Breakdown Table -->
-  <div class="one-col">
-    <div class="card">
-      <div class="section-title"><span class="dot d-red"></span>State Breakdown</div>
-      <div class="table-wrap" id="stateTable"></div>
-    </div>
-  </div>
-
-</div><!-- /dashboard -->
+</div>
 
 <script>
-// ─── Column map — exact names confirmed by user ───────────────────────────────
+/* ── Column detection ── */
 const EXACT = {
-  enrolledDate: 'Cordoba Enrolled Date',
-  droppedDate:  'Cordoba Dropped Date',
-  agent:        'Assigned To',
-  state:        'State',
-  createdDate:  'Created',
-  debtAmount:   'Enrolled Debt',
+  enrolledDate:'Cordoba Enrolled Date',
+  droppedDate:'Cordoba Dropped Date',
+  agent:'Assigned To',
+  state:'State',
+  createdDate:'Created',
+  debtAmount:'Enrolled Debt',
 };
 const PATTERNS = {
-  enrolledDate: [/cordoba\s*enroll/i, /enroll.*date/i],
-  droppedDate:  [/cordoba\s*drop/i, /drop.*date/i, /cancel.*date/i],
-  agent:        [/assigned\s*to/i, /agent/i, /rep\s*name/i, /sales\s*rep/i, /closer/i],
-  state:        [/^state$/i, /\bstate\b/i],
-  createdDate:  [/^created$/i, /created\s*date/i],
-  debtAmount:   [/enrolled\s*debt/i, /debt\s*amount/i, /total\s*debt/i],
-  campaign:     [/campaign/i, /lead\s*source/i, /source/i, /program/i, /product/i],
-  creditScore:  [/credit\s*score/i, /fico/i, /credit/i, /score/i],
-  monthlyIncome:[/monthly\s*income/i, /net.*income/i, /income/i, /monthly.*net/i],
+  campaign:/campaign|source|lead.?source|channel/i,
+  creditScore:/credit.?score|fico/i,
+  monthlyIncome:/monthly.?income|income/i,
 };
 
-function cleanH(h) { return h.replace(/[​‌‍﻿ ]/g,'').trim(); }
-
-function detectCols(headers) {
-  const m = {};
-  for (const [f,exact] of Object.entries(EXACT)) {
-    const found = headers.find(h => cleanH(h) === exact);
-    if (found) m[f] = found;
-  }
-  for (const [f,pats] of Object.entries(PATTERNS)) {
-    if (m[f]) continue;
-    for (const h of headers) { if (pats.some(p=>p.test(cleanH(h)))) { m[f]=h; break; } }
-  }
-  return m;
+function cleanH(h){
+  return h.replace(/[​‌‍﻿ ]/g,'').trim();
 }
 
-// ─── Globals ──────────────────────────────────────────────────────────────────
-let rawRows=[], colMap={}, charts={};
-const sortState = {};
+let colMap={}, rawRows=[], charts={}, sortState={};
 
-// ─── Upload ───────────────────────────────────────────────────────────────────
+function detectColumns(headers){
+  const map={};
+  const cleaned=headers.map(cleanH);
+  for(const [k,exact] of Object.entries(EXACT)){
+    const i=cleaned.indexOf(exact);
+    map[k]=i>=0?headers[i]:null;
+  }
+  for(const [k,pat] of Object.entries(PATTERNS)){
+    const h=headers.find(h=>pat.test(cleanH(h)));
+    map[k]=h||null;
+  }
+  return map;
+}
+
+/* ── Upload ── */
 const dropZone=document.getElementById('dropZone');
 const fileInput=document.getElementById('fileInput');
-dropZone.addEventListener('dragover', e=>{e.preventDefault();dropZone.classList.add('drag-over');});
-dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e=>{e.preventDefault();dropZone.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
-fileInput.addEventListener('change', e=>handleFile(e.target.files[0]));
-dropZone.addEventListener('click', e=>{if(e.target.tagName!=='BUTTON') fileInput.click();});
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('drag-over');if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])loadFile(fileInput.files[0])});
+dropZone.addEventListener('click',e=>{if(e.target!==document.querySelector('.btn-upload'))fileInput.click()});
 
-function handleFile(file) {
-  if (!file) return;
-  Papa.parse(file, {
-    header:true, skipEmptyLines:true,
-    complete: result => {
-      colMap = detectCols(result.meta.fields||[]);
-      if (!colMap.enrolledDate) { alert('Cannot find "Cordoba Enrolled Date" column.'); return; }
-      rawRows = result.data;
+function loadFile(file){
+  Papa.parse(file,{
+    header:true,skipEmptyLines:true,
+    complete(res){
+      colMap=detectColumns(res.meta.fields||[]);
+      rawRows=colMap.enrolledDate?res.data.filter(r=>r[colMap.enrolledDate]&&r[colMap.enrolledDate].trim()):[];
+      initFilters();
       document.getElementById('uploadSection').style.display='none';
       document.getElementById('dashboard').classList.add('visible');
-      populateDropdowns();
-      applyFilters();
+      renderDashboard(rawRows);
     }
   });
 }
-function uploadNew() {
-  document.getElementById('uploadSection').style.display='block';
-  document.getElementById('dashboard').classList.remove('visible');
-  fileInput.value=''; rawRows=[];
+
+/* ── Filters ── */
+function initFilters(){
+  const stateSet=new Set(), agentSet=new Set();
+  rawRows.forEach(r=>{
+    if(colMap.state&&r[colMap.state]) stateSet.add(r[colMap.state].trim());
+    if(colMap.agent&&r[colMap.agent]) agentSet.add(r[colMap.agent].trim());
+  });
+  const fState=document.getElementById('f_state');
+  const fAgent=document.getElementById('f_agent');
+  fState.innerHTML='<option value="">All States</option>';
+  [...stateSet].sort().forEach(s=>fState.innerHTML+=`<option>${s}</option>`);
+  fAgent.innerHTML='<option value="">All Agents</option>';
+  [...agentSet].sort().forEach(a=>fAgent.innerHTML+=`<option>${a}</option>`);
+  ['f_from','f_to','f_state','f_agent'].forEach(id=>document.getElementById(id).addEventListener('change',applyFilters));
+  document.getElementById('btnReset').addEventListener('click',()=>{
+    ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f_state').value='';
+    document.getElementById('f_agent').value='';
+    renderDashboard(rawRows);
+  });
 }
 
-// ─── Filters ──────────────────────────────────────────────────────────────────
-function populateDropdowns() {
-  const states=new Set(), agents=new Set(), camps=new Set();
-  for (const r of rawRows) {
-    if (colMap.state    && r[colMap.state])    states.add(r[colMap.state].trim());
-    if (colMap.agent    && r[colMap.agent])    agents.add(r[colMap.agent].trim());
-    if (colMap.campaign && r[colMap.campaign]) camps.add(r[colMap.campaign].trim());
-  }
-  const fill=(id,items)=>{
-    const el=document.getElementById(id);
-    const first=el.options[0].text;
-    el.innerHTML=`<option value="">${first}</option>`+[...items].sort().map(v=>`<option>${v}</option>`).join('');
-  };
-  fill('stateFilter', states);
-  fill('agentFilter', agents);
-  fill('campFilter', camps);
-}
-
-function resetFilters() {
-  ['dateFrom','dateTo','stateFilter','agentFilter','campFilter'].forEach(id=>document.getElementById(id).value='');
-  applyFilters();
-}
-['dateFrom','dateTo','stateFilter','agentFilter','campFilter'].forEach(id=>
-  document.getElementById(id).addEventListener('change', applyFilters));
-
-function pd(str) { if(!str) return null; const d=new Date(str); return isNaN(d)?null:d; }
-const monthKey = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-const parse$ = v => parseFloat((v||'').toString().replace(/[^0-9.-]/g,''))||0;
-
-function applyFilters() {
-  const from=document.getElementById('dateFrom').value;
-  const to  =document.getElementById('dateTo').value;
-  const stF =document.getElementById('stateFilter').value;
-  const agF =document.getElementById('agentFilter').value;
-  const caF =document.getElementById('campFilter').value;
+function applyFilters(){
+  const from=document.getElementById('f_from').value;
+  const to=document.getElementById('f_to').value;
+  const state=document.getElementById('f_state').value;
+  const agent=document.getElementById('f_agent').value;
   const rows=rawRows.filter(r=>{
-    const ed=r[colMap.enrolledDate]; if(!ed||!ed.trim()) return false;
-    const d=pd(ed); if(!d) return false;
-    if (from && d<new Date(from)) return false;
-    if (to   && d>new Date(to+'T23:59:59')) return false;
-    if (stF && (r[colMap.state]||'').trim()!==stF) return false;
-    if (agF && (r[colMap.agent]||'').trim()!==agF) return false;
-    if (caF && colMap.campaign && (r[colMap.campaign]||'').trim()!==caF) return false;
+    const ed=r[colMap.enrolledDate]?.trim()||'';
+    if(from&&ed<from)return false;
+    if(to&&ed>to)return false;
+    if(state&&(r[colMap.state]||'').trim()!==state)return false;
+    if(agent&&(r[colMap.agent]||'').trim()!==agent)return false;
     return true;
   });
-  render(rows);
+  renderDashboard(rows);
 }
 
-// ─── Main Render ──────────────────────────────────────────────────────────────
-function render(rows) {
-  const cancelled = rows.filter(r=>r[colMap.droppedDate]&&r[colMap.droppedDate].trim());
-  const active    = rows.filter(r=>!r[colMap.droppedDate]||!r[colMap.droppedDate].trim());
-  const total     = rows.length;
-  const ratio     = total>0 ? cancelled.length/total : 0;
+/* ── Helpers ── */
+function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n}
+function fmtDollar(n){return '$'+(n>=1e9?(n/1e9).toFixed(1)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':n.toFixed(0))}
+function pct(a,b){return b?((a/b)*100).toFixed(1)+'%':'—'}
+function rateBadge(r){const cl=r>=0.4?'high':r>=0.2?'mid':'low';return`<span class="rate-badge ${cl}">${(r*100).toFixed(1)}%</span>`}
+function parseDate(s){if(!s)return null;const d=new Date(s.trim());return isNaN(d)?null:d}
+function monthKey(d){return d?d.toISOString().slice(0,7):null}
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
+function chartEmpty(id,msg){
+  const el=document.getElementById(id+'-empty');
+  if(el){el.style.display=msg?'flex':'none';el.textContent=msg||''}
+}
 
-  // Durations
-  const durations = cancelled.map(r=>{
-    const ed=pd(r[colMap.enrolledDate]), dd=pd(r[colMap.droppedDate]);
-    return (ed&&dd) ? Math.round((dd-ed)/86400000) : null;
-  }).filter(d=>d!==null&&d>=0).sort((a,b)=>a-b);
-  const median = durations.length ? durations[Math.floor(durations.length/2)] : null;
+/* ── Main render ── */
+function renderDashboard(rows){
+  const cancelled=rows.filter(r=>r[colMap.droppedDate]&&r[colMap.droppedDate].trim());
+  const active=rows.filter(r=>!r[colMap.droppedDate]||!r[colMap.droppedDate].trim());
+  const total=rows.length;
+  const cancelRate=total?(cancelled.length/total):0;
 
-  // Debt lost
-  const debtLost = cancelled.reduce((s,r)=>s+parse$(r[colMap.debtAmount]),0);
+  /* KPI */
+  document.getElementById('kpi-total').textContent=fmt(total);
+  document.getElementById('kpi-active').textContent=fmt(active.length);
+  document.getElementById('kpi-cancelled').textContent=fmt(cancelled.length);
+  document.getElementById('kpi-rate').textContent=(cancelRate*100).toFixed(1)+'%';
 
-  // ── 1. KPIs
-  document.getElementById('kpiTotal').textContent = total.toLocaleString();
-  document.getElementById('kpiRatio').textContent = (ratio*100).toFixed(1)+'%';
-  document.getElementById('kpiDebt').textContent  = debtLost>=1e6
-    ? '$'+(debtLost/1e6).toFixed(1)+'M'
-    : '$'+(debtLost/1e3).toFixed(0)+'K';
-  document.getElementById('kpiDays').textContent  = median!==null ? median+'d' : '—';
+  /* KPI subs */
+  let totalDebt=0;
+  if(colMap.debtAmount) rows.forEach(r=>{const v=parseFloat((r[colMap.debtAmount]||'').replace(/[$,]/g,''));if(!isNaN(v))totalDebt+=v});
+  document.getElementById('kpi-total-sub').textContent=totalDebt?`of ${fmtDollar(totalDebt)} enrolled debt`:'rows with enrolled date';
+  document.getElementById('kpi-active-sub').textContent=`${pct(active.length,total)} of portfolio`;
+  document.getElementById('kpi-cancelled-sub').textContent=`${pct(cancelled.length,total)} of portfolio`;
 
-  // ── 8. Key Insights
-  renderInsights(rows, cancelled, active, ratio, durations);
+  /* Days to cancel stats */
+  const daysList=[];
+  cancelled.forEach(r=>{
+    const ed=parseDate(r[colMap.enrolledDate]);
+    const dd=parseDate(r[colMap.droppedDate]);
+    if(ed&&dd){const d=Math.round((dd-ed)/86400000);if(d>=0)daysList.push(d)}
+  });
+  daysList.sort((a,b)=>a-b);
+  const medDays=daysList.length?daysList[Math.floor(daysList.length/2)]:null;
+  document.getElementById('kpi-rate-sub').textContent=medDays!=null?`Median ${medDays} days to cancel`:'of enrolled clients';
 
-  // ── 2. Cohort trend
-  renderCohort(rows);
-
-  // ── 3. Campaign
-  renderCampaign(rows);
-
-  // ── 7. Agent
-  renderAgent(rows);
-
-  // ── 4. Day buckets
-  renderDayBuckets(durations);
-
-  // ── 5. Credit score
+  renderCohortChart(rows,cancelled);
+  renderCampaignBars(rows,cancelled);
+  renderDaysChart(daysList,cancelled.length);
   renderCreditChart(rows);
-
-  // ── 6. Heatmap
   renderHeatmap(rows);
-
-  // Tables
+  renderAgentChart(rows);
+  renderPatterns(rows,cancelled,active,daysList,cancelRate);
   renderAgentTable(rows);
   renderStateTable(rows);
-
-  // Baseline
-  renderBaseline(ratio, rows);
 }
 
-// ─── 8. Key Insights ──────────────────────────────────────────────────────────
-function renderInsights(rows, cancelled, active, ratio, durations) {
-  const ins = [];
+/* ── Finding 1: Cohort ── */
+function renderCohortChart(rows,cancelled){
+  destroyChart('chartCohort');
+  chartEmpty('chartCohort','');
+  if(!colMap.enrolledDate){chartEmpty('chartCohort','No enrolled date column');return}
 
-  // Worst state
-  if (colMap.state) {
-    const sb={};
-    for (const r of rows) {
-      const s=(r[colMap.state]||'').trim()||'(unknown)';
-      if(!sb[s])sb[s]={e:0,c:0};
-      sb[s].e++;
-      if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())sb[s].c++;
-    }
-    const states=Object.entries(sb).filter(([,v])=>v.e>=10).map(([k,v])=>({k,rate:v.c/v.e,c:v.c,e:v.e}));
-    if (states.length) {
-      const worst=states.slice().sort((a,b)=>b.rate-a.rate)[0];
-      ins.push({cls:'i-red', title:'Highest-Risk State', body:`<span>${worst.k}</span> — ${(worst.rate*100).toFixed(1)}% cancel rate (${worst.c} of ${worst.e} enrolled).`});
-    }
-  }
+  const enrByMonth={}, canByMonth={};
+  rows.forEach(r=>{
+    const d=parseDate(r[colMap.enrolledDate]);
+    const mk=monthKey(d);
+    if(!mk)return;
+    enrByMonth[mk]=(enrByMonth[mk]||0)+1;
+  });
+  cancelled.forEach(r=>{
+    const d=parseDate(r[colMap.enrolledDate]);
+    const mk=monthKey(d);
+    if(!mk)return;
+    canByMonth[mk]=(canByMonth[mk]||0)+1;
+  });
+  const months=[...new Set([...Object.keys(enrByMonth),...Object.keys(canByMonth)])].sort();
+  if(!months.length){chartEmpty('chartCohort','No data');return}
 
-  // Early cancels
-  if (durations.length) {
-    const early=durations.filter(d=>d<=14).length;
-    const earlyPct=(early/durations.length*100).toFixed(0);
-    ins.push({cls:'i-amber', title:'Early Exit Risk', body:`<span>${earlyPct}%</span> of all cancellations happen within the first <span>14 days</span>. Intervention window: days 0–14.`});
-  }
+  const enrVals=months.map(m=>enrByMonth[m]||0);
+  const canVals=months.map(m=>canByMonth[m]||0);
+  const rateVals=months.map(m=>{const e=enrByMonth[m]||0;const c=canByMonth[m]||0;return e?+(c/e*100).toFixed(1):0});
 
-  // Trend
-  {
-    const mb={};
-    for (const r of rows) {
-      const ed=pd(r[colMap.enrolledDate]); if(!ed) continue;
-      const k=monthKey(ed);
-      if(!mb[k])mb[k]={e:0,c:0};
-      mb[k].e++;
-      if(colMap.droppedDate&&r[colMap.droppedDate]&&r[colMap.droppedDate].trim())mb[k].c++;
-    }
-    const months=Object.keys(mb).sort();
-    if (months.length>=4) {
-      const r3=months.slice(-3), e3=months.slice(0,3);
-      const rR=r3.reduce((s,k)=>s+mb[k].c,0)/r3.reduce((s,k)=>s+mb[k].e,1);
-      const eR=e3.reduce((s,k)=>s+mb[k].c,0)/e3.reduce((s,k)=>s+mb[k].e,1);
-      const up=rR>eR;
-      ins.push({cls:up?'i-amber':'i-green', title:`Trend ${up?'↑ Worsening':'↓ Improving'}`, body:`Recent cohort avg <span>${(rR*100).toFixed(1)}%</span> vs early cohort avg <span>${(eR*100).toFixed(1)}%</span>.`});
-    }
-  }
+  /* Dynamic title */
+  const last6=rateVals.slice(-6);
+  const trend=last6.length>=2?last6[last6.length-1]-last6[0]:0;
+  document.getElementById('f1-title').textContent=
+    trend>5?'Cancellation rate is accelerating — urgent attention needed':
+    trend<-5?'Cancellation rate is improving over recent months':
+    'Cancellation rate is relatively stable across cohorts';
 
-  // Best agent
-  if (colMap.agent) {
-    const ab={};
-    for (const r of rows) {
-      const a=(r[colMap.agent]||'').trim()||'(unknown)';
-      if(!ab[a])ab[a]={e:0,c:0};
-      ab[a].e++;
-      if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())ab[a].c++;
-    }
-    const agents=Object.entries(ab).filter(([,v])=>v.e>=10).map(([k,v])=>({k,rate:v.c/v.e,e:v.e}));
-    if (agents.length) {
-      const best=agents.slice().sort((a,b)=>a.rate-b.rate)[0];
-      ins.push({cls:'i-green', title:'Best Agent', body:`<span>${best.k}</span> — <span>${(best.rate*100).toFixed(1)}%</span> cancel rate across ${best.e} enrollments.`});
-    }
-  }
-
-  document.getElementById('insightRow').innerHTML = ins.map(i=>
-    `<div class="insight ${i.cls}"><b>${i.title}</b><p>${i.body}</p></div>`
-  ).join('');
-}
-
-// ─── 2. Cohort Trend (dual-axis) ──────────────────────────────────────────────
-function renderCohort(rows) {
-  if(charts.cohort){charts.cohort.destroy();delete charts.cohort;}
-  const b={};
-  for (const r of rows) {
-    const ed=pd(r[colMap.enrolledDate]); if(!ed) continue;
-    const k=monthKey(ed);
-    if(!b[k])b[k]={e:0,c:0};
-    b[k].e++;
-    if(colMap.droppedDate&&r[colMap.droppedDate]&&r[colMap.droppedDate].trim())b[k].c++;
-  }
-  const labels=Object.keys(b).sort();
-  const enrolled=labels.map(l=>b[l].e);
-  const rates=labels.map(l=>b[l].e>0?+(b[l].c/b[l].e*100).toFixed(1):0);
   const ctx=document.getElementById('chartCohort').getContext('2d');
-  charts.cohort=new Chart(ctx,{
-    data:{labels, datasets:[
-      {type:'bar', label:'Enrolled', data:enrolled, backgroundColor:'rgba(108,99,255,0.35)', borderColor:'rgba(108,99,255,0.7)', borderWidth:1, borderRadius:3, yAxisID:'yCount'},
-      {type:'line', label:'Cancel Rate %', data:rates, borderColor:'#ff5b5b', backgroundColor:'rgba(255,91,91,0.1)', fill:true, tension:0.35, pointBackgroundColor:'#ff5b5b', pointRadius:4, yAxisID:'yRate'},
-    ]},
+  charts.chartCohort=new Chart(ctx,{
+    data:{
+      labels:months.map(m=>{const[y,mo]=m.split('-');return new Date(+y,+mo-1).toLocaleString('default',{month:'short',year:'2-digit'})}),
+      datasets:[
+        {type:'bar',label:'Enrollments',data:enrVals,backgroundColor:'rgba(108,99,255,.5)',yAxisID:'y'},
+        {type:'bar',label:'Cancellations',data:canVals,backgroundColor:'rgba(255,91,91,.5)',yAxisID:'y'},
+        {type:'line',label:'Cancel Rate %',data:rateVals,borderColor:'#f5a623',backgroundColor:'transparent',borderWidth:2,pointRadius:3,yAxisID:'y2',tension:.4},
+      ]
+    },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{labels:{color:'#8892b0',font:{size:12},boxWidth:12}},
-        tooltip:{backgroundColor:'#1a1d27',borderColor:'#2e3250',borderWidth:1,titleColor:'#e8eaf6',bodyColor:'#8892b0'},
-        annotation: undefined
-      },
+      responsive:true,plugins:{legend:{labels:{color:'#8892b0',boxWidth:12,font:{size:11}}}},
       scales:{
-        yCount:{position:'left',  grid:{color:'rgba(46,50,80,0.4)'}, ticks:{color:'#8892b0',font:{size:11}}, title:{display:true,text:'Enrolled',color:'#8892b0',font:{size:11}}},
-        yRate: {position:'right', grid:{drawOnChartArea:false},       ticks:{color:'#ff5b5b',font:{size:11},callback:v=>v+'%'}, title:{display:true,text:'Cancel Rate %',color:'#ff5b5b',font:{size:11}}, min:0},
-        x:     {grid:{color:'rgba(46,50,80,0.4)'}, ticks:{color:'#8892b0',font:{size:11}}}
+        x:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#2e3250'}},
+        y:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#2e3250'},title:{display:true,text:'Count',color:'#8892b0',font:{size:10}}},
+        y2:{position:'right',ticks:{color:'#f5a623',font:{size:10},callback:v=>v+'%'},grid:{display:false},title:{display:true,text:'Rate %',color:'#f5a623',font:{size:10}}},
       }
     }
   });
 }
 
-// ─── 3. Campaign Cancel Rates ──────────────────────────────────────────────────
-function renderCampaign(rows) {
-  const el=document.getElementById('campChart');
-  if (!colMap.campaign) { el.innerHTML='<div class="chart-empty" style="position:static;height:120px;"><p>No campaign column detected in CSV.</p></div>'; return; }
-  const cb={};
-  for (const r of rows) {
-    const c=(r[colMap.campaign]||'').trim()||'(unknown)';
-    if(!cb[c])cb[c]={e:0,c:0};
-    cb[c].e++;
-    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())cb[c].c++;
-  }
-  const camps=Object.entries(cb)
-    .filter(([,v])=>v.e>=30)
-    .map(([k,v])=>({k,rate:v.c/v.e,c:v.c,e:v.e}))
-    .sort((a,b)=>b.rate-a.rate);
-  if (!camps.length) { el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:16px">No campaigns with ≥30 enrollments.</div>'; return; }
-  const maxRate=Math.max(...camps.map(c=>c.rate));
-  el.innerHTML=`<div class="camp-list">${camps.map(c=>{
-    const pct=(c.rate*100).toFixed(1);
-    const barColor = c.rate>0.40 ? '#ff5b5b' : c.rate>0.25 ? '#f5a623' : '#00d4aa';
-    const barW = Math.round(c.rate/maxRate*100);
-    return `<div class="camp-row">
-      <div class="camp-name" title="${c.k}">${c.k}</div>
-      <div class="camp-bar-wrap">
-        <div class="camp-bar" style="width:${barW}%;background:${barColor}"></div>
-        <span class="camp-pct" style="color:${barColor}">${pct}%</span>
-      </div>
-      <div class="camp-n">${c.e.toLocaleString()} enr</div>
+/* ── Finding 2: Campaign bars ── */
+function renderCampaignBars(rows,cancelled){
+  const el=document.getElementById('campBars');
+  if(!colMap.campaign){el.innerHTML='<div style="color:var(--muted);font-size:13px">No campaign/source column detected in CSV</div>';document.getElementById('f2-title').textContent='Cancellation rate by source / campaign';return}
+
+  const map={};
+  rows.forEach(r=>{
+    const c=(r[colMap.campaign]||'Unknown').trim()||'Unknown';
+    if(!map[c])map[c]={enr:0,can:0};
+    map[c].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())map[c].can++;
+  });
+  const entries=Object.entries(map).filter(([,v])=>v.enr>=5).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr)).slice(0,12);
+  if(!entries.length){el.innerHTML='<div style="color:var(--muted);font-size:13px">Insufficient data</div>';return}
+
+  const maxRate=Math.max(...entries.map(([,v])=>v.can/v.enr));
+  const worst=entries[0];
+  document.getElementById('f2-title').textContent=`"${worst[0]}" has the highest cancel rate at ${(worst[1].can/worst[1].enr*100).toFixed(0)}%`;
+
+  el.innerHTML=entries.map(([name,v])=>{
+    const rate=v.can/v.enr;
+    const barPct=(maxRate?rate/maxRate*100:0).toFixed(1);
+    const color=rate>=0.4?'var(--danger)':rate>=0.2?'var(--warning)':'var(--accent2)';
+    return`<div class="camp-row">
+      <div class="camp-name" title="${name}">${name}</div>
+      <div class="camp-bar-wrap"><div class="camp-bar" style="width:${barPct}%;background:${color}"></div></div>
+      <div class="camp-pct">${(rate*100).toFixed(0)}%</div>
+      <div class="camp-n">${v.enr} enr</div>
     </div>`;
-  }).join('')}</div>
-  <div style="margin-top:10px;font-size:11px;color:var(--muted);display:flex;gap:16px">
-    <span style="color:#ff5b5b">■ >40% high risk</span>
-    <span style="color:#f5a623">■ 25–40% watch</span>
-    <span style="color:#00d4aa">■ &lt;25% healthy</span>
-  </div>`;
+  }).join('');
 }
 
-// ─── 7. Agent Cancel Rate Chart ───────────────────────────────────────────────
-function renderAgent(rows) {
-  if(charts.agent){charts.agent.destroy();delete charts.agent;}
-  const el=document.getElementById('chartAgent');
-  if (!colMap.agent) { showEmpty('chartAgent','Agent column not detected.'); return; }
-  clearEmpty('chartAgent');
-  const ab={};
-  for (const r of rows) {
-    const a=(r[colMap.agent]||'').trim()||'(unknown)';
-    if(!ab[a])ab[a]={e:0,c:0};
-    ab[a].e++;
-    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())ab[a].c++;
-  }
-  const agents=Object.entries(ab)
-    .filter(([,v])=>v.e>=10)
-    .map(([k,v])=>({k,rate:v.c/v.e,e:v.e}))
-    .sort((a,b)=>a.rate-b.rate); // best to worst
-  if (!agents.length) { showEmpty('chartAgent','No agents with ≥10 enrollments.'); return; }
-  const colors=agents.map(a=>a.rate>0.40?'rgba(255,91,91,0.75)':a.rate>0.25?'rgba(245,166,35,0.75)':'rgba(0,212,170,0.75)');
-  const ctx=el.getContext('2d');
-  charts.agent=new Chart(ctx,{
+/* ── Finding 3: Days to cancel ── */
+function renderDaysChart(daysList,totalCancelled){
+  destroyChart('chartDays');
+  chartEmpty('chartDays','');
+  if(!daysList.length){chartEmpty('chartDays','No cancellation date data');document.getElementById('daysCallouts').innerHTML='';return}
+
+  const buckets=[0,30,60,90,120,180,365,Infinity];
+  const labels=['0-30','31-60','61-90','91-120','121-180','181-365','365+'];
+  const counts=new Array(labels.length).fill(0);
+  daysList.forEach(d=>{
+    for(let i=0;i<buckets.length-1;i++){if(d>=buckets[i]&&d<buckets[i+1]){counts[i]++;break}}
+  });
+
+  const ctx=document.getElementById('chartDays').getContext('2d');
+  charts.chartDays=new Chart(ctx,{
     type:'bar',
-    data:{labels:agents.map(a=>a.k), datasets:[{label:'Cancel Rate %',data:agents.map(a=>+(a.rate*100).toFixed(1)),backgroundColor:colors,borderRadius:4}]},
+    data:{labels,datasets:[{label:'Cancellations',data:counts,backgroundColor:'rgba(255,91,91,.6)',borderColor:'#ff5b5b',borderWidth:1,borderRadius:4}]},
     options:{
-      responsive:true, maintainAspectRatio:false, indexAxis:'y',
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a1d27',borderColor:'#2e3250',borderWidth:1,titleColor:'#e8eaf6',bodyColor:'#8892b0',callbacks:{afterLabel:c=>`(${agents[c.dataIndex].e} enrolled)`}}},
+      responsive:true,
+      plugins:{legend:{display:false}},
       scales:{
-        x:{grid:{color:'rgba(46,50,80,0.4)'},ticks:{color:'#8892b0',font:{size:11},callback:v=>v+'%'}},
-        y:{grid:{color:'rgba(46,50,80,0.4)'},ticks:{color:'#8892b0',font:{size:11}}}
+        x:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#2e3250'},title:{display:true,text:'Days after enrollment',color:'#8892b0',font:{size:10}}},
+        y:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#2e3250'},title:{display:true,text:'Count',color:'#8892b0',font:{size:10}}},
       }
     }
   });
-}
 
-// ─── 4. Days-to-Cancellation Buckets ─────────────────────────────────────────
-function renderDayBuckets(durations) {
-  const el=document.getElementById('dayBuckets');
-  if (!colMap.droppedDate||!durations.length) {
-    el.innerHTML='<p style="color:var(--muted);font-size:13px">Dropped date column not detected or no cancellations.</p>'; return;
-  }
-  const BUCKETS=[{l:'0–3d',max:3},{l:'4–7d',max:7},{l:'8–14d',max:14},{l:'15–30d',max:30},{l:'31–60d',max:60},{l:'61d+',max:Infinity}];
-  const counts=BUCKETS.map(b=>0);
-  for (const d of durations) {
-    for (let i=0;i<BUCKETS.length;i++) {
-      const prev=i===0?-1:BUCKETS[i-1].max;
-      if (d>prev&&d<=BUCKETS[i].max){counts[i]++;break;}
-    }
-  }
-  const total=durations.length;
-  const window14=counts[0]+counts[1]+counts[2];
-  const win14Pct=(window14/total*100).toFixed(0);
-  el.innerHTML=`<div class="day-buckets">${BUCKETS.map((b,i)=>{
-    const isWin=i<=2;
-    return `<div class="day-bucket${isWin?' highlight':''}">
-      <div class="db-label">${b.l}</div>
-      <div class="db-value">${counts[i]}</div>
-      <div class="db-pct">${(counts[i]/total*100).toFixed(0)}%</div>
+  const within30=daysList.filter(d=>d<=30).length;
+  const within90=daysList.filter(d=>d<=90).length;
+  const medDays=daysList[Math.floor(daysList.length/2)];
+  document.getElementById('f3-title').textContent=
+    within30/totalCancelled>0.4?`${(within30/totalCancelled*100).toFixed(0)}% of cancellations happen within the first 30 days`:
+    `Median time to cancellation is ${medDays} days`;
+
+  document.getElementById('daysCallouts').innerHTML=`
+    <div class="callout danger">
+      <div class="c-label">Early Exits (≤30 days)</div>
+      <div class="c-value">${(within30/totalCancelled*100).toFixed(0)}%</div>
+      <div class="c-desc">${within30} of ${totalCancelled} cancelled within 30 days</div>
+    </div>
+    <div class="callout good">
+      <div class="c-label">Median Days to Cancel</div>
+      <div class="c-value">${medDays}</div>
+      <div class="c-desc">${(within90/totalCancelled*100).toFixed(0)}% cancel within 90 days</div>
     </div>`;
-  }).join('')}</div>
-  <p class="window-note">⚡ Intervention window 0–14 days: <b>${window14} cancellations (${win14Pct}%)</b> — contact clients within 14 days of enrollment.</p>`;
 }
 
-// ─── 5. Credit Score × Cancel Rate ───────────────────────────────────────────
-function renderCreditChart(rows) {
-  if(charts.credit){charts.credit.destroy();delete charts.credit;}
-  if (!colMap.creditScore) { showEmpty('chartCredit','Credit score column not detected.'); return; }
-  clearEmpty('chartCredit');
-  const BUCKETS=[{l:'<580 (Poor)',min:0,max:579},{l:'580–649 (Fair)',min:580,max:649},{l:'650–699 (Good)',min:650,max:699},{l:'700+ (Very Good)',min:700,max:9999}];
-  const b=BUCKETS.map(()=>({e:0,c:0}));
-  for (const r of rows) {
-    const sc=parseFloat((r[colMap.creditScore]||'').toString().replace(/[^0-9.]/g,''));
-    if (isNaN(sc)||sc<=0) continue;
-    const i=BUCKETS.findIndex(bk=>sc>=bk.min&&sc<=bk.max);
-    if (i>=0){b[i].e++;if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())b[i].c++;}
-  }
-  const rates=b.map(bk=>bk.e>0?+(bk.c/bk.e*100).toFixed(1):0);
-  const colors=rates.map(r=>r>40?'rgba(255,91,91,0.75)':r>25?'rgba(245,166,35,0.75)':'rgba(0,212,170,0.75)');
-  // flag counterintuitive 700+
-  const highRate=rates[3];
+/* ── Finding 4A: Credit score ── */
+function renderCreditChart(rows){
+  destroyChart('chartCredit');
+  chartEmpty('chartCredit','');
+  if(!colMap.creditScore){chartEmpty('chartCredit','No credit score column detected');return}
+
+  const bands={'<580':[],'580-619':[],'620-659':[],'660-699':[],'700-739':[],'740+':[]};
+  rows.forEach(r=>{
+    const sc=parseFloat(r[colMap.creditScore]);
+    if(isNaN(sc))return;
+    const cancelled=!!(r[colMap.droppedDate]&&r[colMap.droppedDate].trim());
+    const band=sc<580?'<580':sc<620?'580-619':sc<660?'620-659':sc<700?'660-699':sc<740?'700-739':'740+';
+    bands[band].push(cancelled);
+  });
+  const labels=Object.keys(bands);
+  const rates=labels.map(b=>{const a=bands[b];return a.length?+(a.filter(Boolean).length/a.length*100).toFixed(1):0});
+  const counts=labels.map(b=>bands[b].length);
+  if(counts.every(c=>c===0)){chartEmpty('chartCredit','No credit score data');return}
+
   const ctx=document.getElementById('chartCredit').getContext('2d');
-  charts.credit=new Chart(ctx,{
+  charts.chartCredit=new Chart(ctx,{
     type:'bar',
-    data:{labels:BUCKETS.map(bk=>bk.l), datasets:[{label:'Cancel Rate %',data:rates,backgroundColor:colors,borderRadius:6}]},
+    data:{labels,datasets:[{label:'Cancel Rate %',data:rates,backgroundColor:'rgba(108,99,255,.6)',borderColor:'#6c63ff',borderWidth:1,borderRadius:4}]},
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{legend:{display:false},
-        tooltip:{backgroundColor:'#1a1d27',borderColor:'#2e3250',borderWidth:1,titleColor:'#e8eaf6',bodyColor:'#8892b0',
-          callbacks:{afterLabel:c=>`(${b[c.dataIndex].e} enrolled)`}
-        }
-      },
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}% (n=${counts[c.dataIndex]})`}}},
       scales:{
-        x:{grid:{color:'rgba(46,50,80,0.4)'},ticks:{color:'#8892b0',font:{size:11}}},
-        y:{grid:{color:'rgba(46,50,80,0.4)'},ticks:{color:'#8892b0',font:{size:11},callback:v=>v+'%'},title:{display:true,text:'Cancel Rate %',color:'#8892b0',font:{size:11}}}
+        x:{ticks:{color:'#8892b0',font:{size:10}},grid:{color:'#2e3250'},title:{display:true,text:'Credit Score Band',color:'#8892b0',font:{size:10}}},
+        y:{ticks:{color:'#8892b0',font:{size:10},callback:v=>v+'%'},grid:{color:'#2e3250'},title:{display:true,text:'Cancel Rate %',color:'#8892b0',font:{size:10}}},
       }
     }
   });
-  // Note if 700+ is unexpectedly high
-  if (highRate>rates[0]&&highRate>rates[1]) {
-    const canvas=document.getElementById('chartCredit');
-    const wrap=canvas.parentElement;
-    let note=wrap.querySelector('.credit-note');
-    if(!note){note=document.createElement('div');note.className='credit-note';note.style.cssText='margin-top:8px;font-size:12px;color:var(--warning);';wrap.appendChild(note);}
-    note.textContent=`⚠ Counterintuitive: 700+ credit score shows ${highRate}% cancel rate — higher than lower score tiers. Possible adverse-selection or product-fit issue.`;
-  }
+
+  const maxBandIdx=rates.indexOf(Math.max(...rates));
+  document.getElementById('f4a-title').textContent=rates.every(r=>r===0)?'Cancel rate by credit score band':`Credit band "${labels[maxBandIdx]}" has highest cancel rate (${rates[maxBandIdx]}%)`;
 }
 
-// ─── 6. Credit × Income Heatmap ──────────────────────────────────────────────
-function renderHeatmap(rows) {
-  const el=document.getElementById('heatmapWrap');
-  if (!colMap.creditScore||!colMap.monthlyIncome) {
-    el.innerHTML=`<p style="color:var(--muted);font-size:13px;padding:16px">Heatmap requires both a credit score column and a monthly income column.<br>Detected: ${colMap.creditScore?'Credit Score ✓':'Credit Score ✗'} &nbsp; ${colMap.monthlyIncome?'Monthly Income ✓':'Monthly Income ✗'}</p>`;
-    return;
+/* ── Finding 4B: Heatmap ── */
+function renderHeatmap(rows){
+  const el=document.getElementById('heatmapDiv');
+  if(!colMap.state||!colMap.debtAmount){el.innerHTML='<div style="color:var(--muted);font-size:13px">Requires state and debt columns</div>';return}
+
+  const debtBands=['<10K','10-25K','25-50K','50-100K','100K+'];
+  function debtBand(v){return v<10000?'<10K':v<25000?'10-25K':v<50000?'25-50K':v<100000?'50-100K':'100K+'}
+
+  const stateMap={};
+  rows.forEach(r=>{
+    const st=(r[colMap.state]||'').trim();
+    const dv=parseFloat((r[colMap.debtAmount]||'').replace(/[$,]/g,''));
+    if(!st||isNaN(dv))return;
+    const band=debtBand(dv);
+    const cancelled=!!(r[colMap.droppedDate]&&r[colMap.droppedDate].trim());
+    if(!stateMap[st])stateMap[st]={};
+    if(!stateMap[st][band])stateMap[st][band]={enr:0,can:0};
+    stateMap[st][band].enr++;
+    if(cancelled)stateMap[st][band].can++;
+  });
+
+  const states=Object.keys(stateMap).sort((a,b)=>{
+    const ra=Object.values(stateMap[a]).reduce((s,v)=>s+v.can,0)/Math.max(1,Object.values(stateMap[a]).reduce((s,v)=>s+v.enr,0));
+    const rb=Object.values(stateMap[b]).reduce((s,v)=>s+v.can,0)/Math.max(1,Object.values(stateMap[b]).reduce((s,v)=>s+v.enr,0));
+    return rb-ra;
+  }).slice(0,10);
+
+  if(!states.length){el.innerHTML='<div style="color:var(--muted);font-size:13px">No data</div>';return}
+
+  function heatColor(rate){
+    const r=Math.min(rate,1);
+    const red=[255,91,91],green=[0,212,170];
+    const c=red.map((v,i)=>Math.round(v+(green[i]-v)*(1-r)));
+    return`rgba(${c[0]},${c[1]},${c[2]},0.35)`;
   }
-  const CS=[{l:'<580',min:0,max:579},{l:'580–649',min:580,max:649},{l:'650–699',min:650,max:699},{l:'700+',min:700,max:9999}];
-  const INC=[{l:'<$2K',max:2000},{l:'$2K–4K',max:4000},{l:'$4K–6K',max:6000},{l:'$6K+',max:Infinity}];
-  const grid=CS.map(()=>INC.map(()=>({e:0,c:0})));
-  for (const r of rows) {
-    const sc=parseFloat((r[colMap.creditScore]||'').toString().replace(/[^0-9.]/g,''));
-    const inc=parse$(r[colMap.monthlyIncome]);
-    if(isNaN(sc)||sc<=0||inc<=0) continue;
-    const ci=CS.findIndex(b=>sc>=b.min&&sc<=b.max);
-    let ii=INC.findIndex((b,idx)=>inc<=(b.max));
-    if(ii<0)ii=INC.length-1;
-    if(ci>=0){grid[ci][ii].e++;if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())grid[ci][ii].c++;}
-  }
-  // color: 0%=dark teal, 50%=orange, 100%=red
-  function heatColor(rate,n) {
-    if(n<3) return 'rgba(46,50,80,0.4)';
-    const r=rate;
-    if(r<0.2) return `rgba(0,212,170,${0.15+r*1.5})`;
-    if(r<0.35) return `rgba(245,166,35,${0.2+r})`;
-    return `rgba(255,91,91,${0.3+r*0.7})`;
-  }
-  let html=`<table class="heatmap-table"><thead><tr><th class="row-header">Credit Score ↓ / Income →</th>${INC.map(b=>`<th>${b.l}</th>`).join('')}</tr></thead><tbody>`;
-  CS.forEach((cs,ci)=>{
-    html+=`<tr><td class="row-label">${cs.l}</td>`;
-    INC.forEach((inc,ii)=>{
-      const cell=grid[ci][ii];
-      const rate=cell.e>0?cell.c/cell.e:0;
-      const bg=heatColor(rate,cell.e);
-      const txt=cell.e>=3?(rate*100).toFixed(0)+'%':'—';
-      html+=`<td style="background:${bg}">${txt}<span class="hl-n">${cell.e>0?cell.e+'n':''}</span></td>`;
+
+  let html=`<table class="heatmap"><thead><tr><th class="row-hd">State</th>${debtBands.map(b=>`<th>${b}</th>`).join('')}</tr></thead><tbody>`;
+  states.forEach(st=>{
+    html+=`<tr><td style="color:var(--text);font-weight:600">${st}</td>`;
+    debtBands.forEach(band=>{
+      const cell=stateMap[st]?.[band];
+      if(!cell||cell.enr===0){html+=`<td style="color:var(--muted)">—</td>`;return}
+      const rate=cell.can/cell.enr;
+      html+=`<td style="background:${heatColor(rate)}">${(rate*100).toFixed(0)}%</td>`;
     });
-    html+=`</tr>`;
+    html+='</tr>';
   });
-  html+=`</tbody></table><p style="margin-top:8px;font-size:11px;color:var(--muted)">Color: <span style="color:var(--accent2)">■ Low</span> <span style="color:var(--warning)">■ Medium</span> <span style="color:var(--danger)">■ High</span> &nbsp;— cells with &lt;3 records show —</p>`;
+  html+='</tbody></table>';
   el.innerHTML=html;
+  document.getElementById('f4b-title').textContent=`Top-10 states by cancel rate × debt range`;
 }
 
-// ─── Baseline Comparison ──────────────────────────────────────────────────────
-const BASELINE = { overall: 28.2, aim_low: 33, aim_high: 47, transferK: 21.6 };
-function renderBaseline(ratio, rows) {
-  const box=document.getElementById('baselineBox');
-  const txt=document.getElementById('baselineText');
-  const cur=(ratio*100);
-  const delta=(cur-BASELINE.overall).toFixed(1);
-  const dir=delta>0?'up':'down';
-  const cls=delta>0?'delta-up':'delta-down';
-  let html=`Overall cancel rate is <span class="${cls}">${cur.toFixed(1)}%</span>, <span class="${cls}">${dir} ${Math.abs(delta)}pp</span> vs the June 2026 baseline of <span>${BASELINE.overall}%</span>. `;
+/* ── Finding 5: Agent chart ── */
+function renderAgentChart(rows){
+  destroyChart('chartAgent');
+  chartEmpty('chartAgent','');
+  if(!colMap.agent){chartEmpty('chartAgent','No agent column detected');return}
 
-  // Check TransferK if campaign column exists
-  if (colMap.campaign) {
-    const tRows=rows.filter(r=>(r[colMap.campaign]||'').toLowerCase().includes('transfer'));
-    if (tRows.length>=10) {
-      const tCancel=tRows.filter(r=>r[colMap.droppedDate]&&r[colMap.droppedDate].trim()).length;
-      const tRate=(tCancel/tRows.length*100).toFixed(1);
-      const tDelta=(parseFloat(tRate)-BASELINE.transferK).toFixed(1);
-      const tCls=tDelta>0?'delta-up':'delta-down';
-      html+=`Transfer-type campaigns are at <span class="${tCls}">${tRate}%</span> vs baseline <span>${BASELINE.transferK}%</span> (<span class="${tCls}">${tDelta>0?'+':''}${tDelta}pp</span>). `;
-    }
-    const aimRows=rows.filter(r=>/aim/i.test(r[colMap.campaign]||''));
-    if (aimRows.length>=10) {
-      const aC=aimRows.filter(r=>r[colMap.droppedDate]&&r[colMap.droppedDate].trim()).length;
-      const aRate=(aC/aimRows.length*100).toFixed(1);
-      html+=`AIM campaigns are at <span>${aRate}%</span> (baseline range: ${BASELINE.aim_low}–${BASELINE.aim_high}%). `;
-    }
-  }
-  html+=`The June 2026 baseline reference: <span>${BASELINE.overall}%</span> overall, AIM campaigns <span>${BASELINE.aim_low}–${BASELINE.aim_high}%</span>, TransferK <span>${BASELINE.transferK}%</span>.`;
-  txt.innerHTML=html;
-  box.style.display='block';
-}
-
-// ─── Agent Table ──────────────────────────────────────────────────────────────
-let _lastRows=[];
-function renderAgentTable(rows) {
-  _lastRows=rows;
-  if (!colMap.agent){document.getElementById('agentTable').innerHTML='<div style="padding:20px;color:var(--muted);font-size:13px">Agent column not detected.</div>';return;}
-  const ab={};
-  for (const r of rows) {
-    const a=(r[colMap.agent]||'').trim()||'(unknown)';
-    if(!ab[a])ab[a]={e:0,c:0};
-    ab[a].e++;
-    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())ab[a].c++;
-  }
-  let agents=Object.entries(ab).map(([name,d])=>({name,enrolled:d.e,cancelled:d.c,active:d.e-d.c,ratio:d.e>0?d.c/d.e:0}));
-  const s=sortState['agentTable']||{col:'ratio',dir:-1};
-  agents.sort((a,b)=>{const av=typeof a[s.col]==='string'?a[s.col].toLowerCase():a[s.col];const bv=typeof b[s.col]==='string'?b[s.col].toLowerCase():b[s.col];return av<bv?s.dir:av>bv?-s.dir:0;});
-  const mxE=Math.max(...agents.map(a=>a.enrolled),1), mxC=Math.max(...agents.map(a=>a.cancelled),1);
-  const TH=(c,l)=>{const ss=sortState['agentTable']||{};const act=ss.col===c;return `<th class="${act?'active':''}" onclick="sort('agentTable','${c}')">${l}<span class="sort-arr">${act?(ss.dir===-1?'▼':'▲'):'⇅'}</span></th>`;};
-  let html=`<table><thead><tr><th>#</th>${TH('name','Agent')}${TH('enrolled','Enrolled')}${TH('active','Active')}${TH('cancelled','Cancelled')}${TH('ratio','Cancel Rate')}</tr></thead><tbody>`;
-  agents.forEach((a,i)=>{
-    const cls=a.ratio>.4?'b-red':a.ratio>.25?'b-amber':'b-green';
-    html+=`<tr><td class="rank">${i+1}</td><td><b>${a.name}</b></td>
-      <td><div class="bar-cell"><div class="mini-bar" style="width:${Math.round(a.enrolled/mxE*70)}px;background:var(--accent)"></div>${a.enrolled}</div></td>
-      <td>${a.active}</td>
-      <td><div class="bar-cell"><div class="mini-bar" style="width:${Math.round(a.cancelled/mxC*70)}px;background:var(--danger)"></div>${a.cancelled}</div></td>
-      <td><span class="badge ${cls}">${(a.ratio*100).toFixed(1)}%</span></td></tr>`;
+  const agentMap={};
+  rows.forEach(r=>{
+    const a=(r[colMap.agent]||'').trim()||'Unknown';
+    if(!agentMap[a])agentMap[a]={enr:0,can:0};
+    agentMap[a].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())agentMap[a].can++;
   });
-  html+='</tbody></table>';
-  document.getElementById('agentTable').innerHTML=agents.length?html:'<div style="padding:20px;color:var(--muted);font-size:13px">No data.</div>';
-}
+  const entries=Object.entries(agentMap).filter(([,v])=>v.enr>=5).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr));
+  if(!entries.length){chartEmpty('chartAgent','Insufficient agent data');return}
 
-// ─── State Table ──────────────────────────────────────────────────────────────
-function renderStateTable(rows) {
-  if (!colMap.state){document.getElementById('stateTable').innerHTML='<div style="padding:20px;color:var(--muted);font-size:13px">State column not detected.</div>';return;}
-  const sb={};
-  for (const r of rows) {
-    const s=(r[colMap.state]||'').trim()||'(unknown)';
-    if(!sb[s])sb[s]={e:0,c:0};
-    sb[s].e++;
-    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())sb[s].c++;
-  }
-  let states=Object.entries(sb).map(([state,d])=>({state,enrolled:d.e,cancelled:d.c,active:d.e-d.c,ratio:d.e>0?d.c/d.e:0}));
-  const s=sortState['stateTable']||{col:'cancelled',dir:-1};
-  states.sort((a,b)=>{const av=typeof a[s.col]==='string'?a[s.col].toLowerCase():a[s.col];const bv=typeof b[s.col]==='string'?b[s.col].toLowerCase():b[s.col];return av<bv?s.dir:av>bv?-s.dir:0;});
-  const mxC=Math.max(...states.map(s=>s.cancelled),1);
-  const TH=(c,l)=>{const ss=sortState['stateTable']||{};const act=ss.col===c;return `<th class="${act?'active':''}" onclick="sort('stateTable','${c}')">${l}<span class="sort-arr">${act?(ss.dir===-1?'▼':'▲'):'⇅'}</span></th>`;};
-  let html=`<table><thead><tr><th>#</th>${TH('state','State')}${TH('enrolled','Enrolled')}${TH('active','Active')}${TH('cancelled','Cancelled')}${TH('ratio','Cancel Rate')}</tr></thead><tbody>`;
-  states.forEach((s,i)=>{
-    const cls=s.ratio>.4?'b-red':s.ratio>.25?'b-amber':'b-green';
-    html+=`<tr><td class="rank">${i+1}</td><td><b>${s.state}</b></td><td>${s.enrolled}</td><td>${s.active}</td>
-      <td><div class="bar-cell"><div class="mini-bar" style="width:${Math.round(s.cancelled/mxC*70)}px;background:var(--danger)"></div>${s.cancelled}</div></td>
-      <td><span class="badge ${cls}">${(s.ratio*100).toFixed(1)}%</span></td></tr>`;
+  const labels=entries.map(([a])=>a);
+  const rates=entries.map(([,v])=>+(v.can/v.enr*100).toFixed(1));
+  const heights=Math.max(260,labels.length*28);
+  document.getElementById('chartAgent').style.height=heights+'px';
+
+  const worst=labels[0];
+  document.getElementById('f5-title').textContent=`"${worst}" has the highest cancel rate (${rates[0]}%) — ${entries.length} agents compared`;
+
+  const colors=rates.map(r=>r>=40?'rgba(255,91,91,.7)':r>=25?'rgba(245,166,35,.7)':'rgba(0,212,170,.7)');
+  const ctx=document.getElementById('chartAgent').getContext('2d');
+  charts.chartAgent=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Cancel Rate %',data:rates,backgroundColor:colors,borderRadius:4}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}% cancel rate`}}},
+      scales:{
+        x:{ticks:{color:'#8892b0',font:{size:10},callback:v=>v+'%'},grid:{color:'#2e3250'},max:100},
+        y:{ticks:{color:'#8892b0',font:{size:10}},grid:{display:false}},
+      }
+    }
   });
-  html+='</tbody></table>';
-  document.getElementById('stateTable').innerHTML=states.length?html:'<div style="padding:20px;color:var(--muted);font-size:13px">No data.</div>';
 }
 
-function sort(tableId, col) {
-  const s=sortState[tableId]||{col:null,dir:-1};
-  s.dir=s.col===col?-s.dir:-1; s.col=col;
-  sortState[tableId]=s;
-  if(tableId==='agentTable') renderAgentTable(_lastRows);
-  if(tableId==='stateTable') renderStateTable(_lastRows);
+/* ── Key Patterns ── */
+function renderPatterns(rows,cancelled,active,daysList,cancelRate){
+  const grid=document.getElementById('patternsGrid');
+
+  /* Pattern 1: worst state */
+  let p1={title:'State Performance',body:'Load data with a State column to see regional patterns.'};
+  if(colMap.state){
+    const sm={};
+    rows.forEach(r=>{const s=(r[colMap.state]||'').trim();if(!s)return;if(!sm[s])sm[s]={e:0,c:0};sm[s].e++;if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())sm[s].c++});
+    const entries=Object.entries(sm).filter(([,v])=>v.e>=10).sort((a,b)=>b[1].c/b[1].e-a[1].c/a[1].e);
+    if(entries.length){
+      const [ws,wv]=entries[0];
+      const [bs,bv]=entries[entries.length-1];
+      p1={title:`${ws} is the highest-risk state`,body:`Cancel rate of ${(wv.c/wv.e*100).toFixed(0)}% vs ${(bv.c/bv.e*100).toFixed(0)}% in best-performing ${bs}. Focus retention efforts on ${ws} clients immediately.`};
+    }
+  }
+
+  /* Pattern 2: early exits */
+  let p2={title:'Time-to-Cancellation',body:'Load data with both enrolled and dropped dates to analyse exit timing.'};
+  if(daysList.length){
+    const w30=daysList.filter(d=>d<=30).length;
+    const med=daysList[Math.floor(daysList.length/2)];
+    p2={title:`${(w30/cancelled.length*100).toFixed(0)}% of cancellations happen within 30 days`,body:`Median time to cancel is ${med} days. Early-exit clients represent the biggest opportunity — a 30-day check-in programme could significantly reduce churn.`};
+  }
+
+  /* Pattern 3: best agent */
+  let p3={title:'Agent Performance',body:'Load data with an Assigned To column to compare agent retention.'};
+  if(colMap.agent){
+    const am={};
+    rows.forEach(r=>{const a=(r[colMap.agent]||'').trim();if(!a)return;if(!am[a])am[a]={e:0,c:0};am[a].e++;if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())am[a].c++});
+    const entries=Object.entries(am).filter(([,v])=>v.e>=10).sort((a,b)=>a[1].c/a[1].e-b[1].c/b[1].e);
+    if(entries.length){
+      const [ba,bv]=entries[0];
+      const [wa,wv]=entries[entries.length-1];
+      p3={title:`${ba} retains clients best — ${(bv.c/bv.e*100).toFixed(0)}% cancel rate`,body:`Compared to ${(wv.c/wv.e*100).toFixed(0)}% for ${wa}. A ${((wv.c/wv.e-bv.c/bv.e)*100).toFixed(0)}-point gap between top and bottom agents suggests training or process standardisation opportunities.`};
+    }
+  }
+
+  /* Pattern 4: portfolio health */
+  const debtAtRisk=cancelled.reduce((s,r)=>{if(!colMap.debtAmount)return s;const v=parseFloat((r[colMap.debtAmount]||'').replace(/[$,]/g,''));return s+(isNaN(v)?0:v)},0);
+  const p4={
+    title:`Overall cancel rate is ${(cancelRate*100).toFixed(1)}% across ${fmt(rows.length)} clients`,
+    body:`${fmt(cancelled.length)} clients have cancelled${debtAtRisk?`, representing ${fmtDollar(debtAtRisk)} in enrolled debt lost`:''}. Active portfolio stands at ${fmt(active.length)} clients (${(active.length/Math.max(1,rows.length)*100).toFixed(0)}% retention).`
+  };
+
+  const classes=['p-red','p-amber','p-green','p-purple'];
+  const patterns=[p1,p2,p3,p4];
+  grid.innerHTML=patterns.map((p,i)=>`
+    <div class="pattern ${classes[i]}">
+      <div class="p-title">${p.title}</div>
+      <div class="p-body">${p.body}</div>
+    </div>`).join('');
 }
 
-// ─── Chart empty helpers ──────────────────────────────────────────────────────
-function showEmpty(canvasId, msg) {
-  const canvas=document.getElementById(canvasId); if(!canvas) return;
-  const wrap=canvas.parentElement;
-  let ov=wrap.querySelector('.chart-empty');
-  if(!ov){ov=document.createElement('div');ov.className='chart-empty';wrap.appendChild(ov);}
-  ov.innerHTML=`<p>${msg}</p>`;
+/* ── Tables ── */
+function renderAgentTable(rows){
+  if(!colMap.agent){document.getElementById('tblAgentBody').innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center">No agent column</td></tr>';return}
+  const map={};
+  rows.forEach(r=>{
+    const a=(r[colMap.agent]||'').trim()||'Unknown';
+    if(!map[a])map[a]={enr:0,active:0,can:0};
+    map[a].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())map[a].can++;else map[a].active++;
+  });
+  agentTableData=Object.entries(map).map(([name,v])=>({name,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0}));
+  agentTableData.sort((a,b)=>b.rate-a.rate);
+  renderTableRows('tblAgentBody',agentTableData,r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`);
 }
-function clearEmpty(canvasId) {
-  const canvas=document.getElementById(canvasId); if(!canvas) return;
-  const ov=canvas.parentElement.querySelector('.chart-empty');
-  if(ov) ov.remove();
+let agentTableData=[];
+
+function renderStateTable(rows){
+  if(!colMap.state){document.getElementById('tblStateBody').innerHTML='<tr><td colspan="5" style="color:var(--muted);text-align:center">No state column</td></tr>';return}
+  const map={};
+  rows.forEach(r=>{
+    const s=(r[colMap.state]||'').trim()||'Unknown';
+    if(!map[s])map[s]={enr:0,active:0,can:0};
+    map[s].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())map[s].can++;else map[s].active++;
+  });
+  stateTableData=Object.entries(map).map(([name,v])=>({name,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0}));
+  stateTableData.sort((a,b)=>b.rate-a.rate);
+  renderTableRows('tblStateBody',stateTableData,r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`);
+}
+let stateTableData=[];
+
+function renderTableRows(tbodyId,data,rowFn){
+  const tbody=document.getElementById(tbodyId);
+  tbody.innerHTML=data.map(r=>`<tr>${rowFn(r)}</tr>`).join('');
+}
+
+/* ── Sort ── */
+function sortTbl(tblId,colIdx){
+  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData};
+  const data=dataMap[tblId]?.();
+  if(!data)return;
+
+  if(!sortState[tblId])sortState[tblId]={col:-1,dir:1};
+  const st=sortState[tblId];
+  st.dir=st.col===colIdx?-st.dir:1;
+  st.col=colIdx;
+
+  const keys=['name','enr','active','can','rate'];
+  data.sort((a,b)=>{
+    const av=a[keys[colIdx]],bv=b[keys[colIdx]];
+    return typeof av==='string'?av.localeCompare(bv)*st.dir:(av-bv)*st.dir;
+  });
+
+  /* Update sort icons */
+  const allSI=document.querySelectorAll(`[id^="si-${tblId}-"]`);
+  allSI.forEach(el=>{ el.textContent=''; el.classList.remove('active') });
+  const si=document.getElementById(`si-${tblId}-${colIdx}`);
+  if(si){si.textContent=st.dir>0?' ▲':' ▼';si.classList.add('active')}
+
+  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody'};
+  const rowFns={
+    tblAgent:r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`,
+    tblState:r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`,
+  };
+  renderTableRows(tbodyMap[tblId],data,rowFns[tblId]);
 }
 </script>
 </body>

@@ -487,13 +487,18 @@ function renderCohortChart(rows,cancelled){
   const canVals=months.map(m=>canByMonth[m]||0);
   const rateVals=months.map(m=>{const e=enrByMonth[m]||0;const c=canByMonth[m]||0;return e?+(c/e*100).toFixed(1):0});
 
-  /* Dynamic title */
-  const last6=rateVals.slice(-6);
+  /* Dynamic title — exclude the most recent month (incomplete, clients haven't had time to cancel) */
+  const currentMonth=new Date().toISOString().slice(0,7);
+  const matureMonths=months.filter(m=>m<currentMonth);
+  const matureRates=matureMonths.map(m=>{const e=enrByMonth[m]||0;const c=canByMonth[m]||0;return e?+(c/e*100).toFixed(1):0});
+  const last6=matureRates.slice(-6);
   const trend=last6.length>=2?last6[last6.length-1]-last6[0]:0;
+  const fromRate=last6[0]?.toFixed(1), toRate=last6[last6.length-1]?.toFixed(1);
   document.getElementById('f1-title').textContent=
-    trend>5?'Cancellation rate is accelerating — urgent attention needed':
-    trend<-5?'Cancellation rate is improving over recent months':
-    'Cancellation rate is relatively stable across cohorts';
+    matureRates.length<2?'Monthly enrollment & cancellation trend':
+    trend>5?`Cancel rate worsening: ${fromRate}% → ${toRate}% over last ${last6.length} months`:
+    trend<-5?`Cancel rate improving: ${fromRate}% → ${toRate}% over last ${last6.length} months`:
+    `Cancel rate stable at ~${toRate}% (last ${last6.length} complete months)`;
 
   const ctx=document.getElementById('chartCohort').getContext('2d');
   charts.chartCohort=new Chart(ctx,{

@@ -296,14 +296,19 @@ const FIELD_PATTERNS = {
   enrolledDate: [/cordoba\s*enroll/i, /enroll.*date/i, /enrolled.*date/i, /date.*enroll/i, /start\s*date/i, /service\s*date/i, /program\s*start/i],
   droppedDate:  [/cordoba\s*drop/i, /drop.*date/i, /dropped.*date/i, /cancel.*date/i, /date.*drop/i, /date.*cancel/i, /term.*date/i, /termination/i, /exit\s*date/i, /left\s*date/i],
   debtAmount:   [/debt\s*amount/i, /enrolled\s*debt/i, /total\s*debt/i, /amount/i, /balance/i],
-  state:        [/^state$/i, /client\s*state/i, /state\s*of/i, /\bst\b/i, /province/i, /location/i],
+  state:        [/^state$/i, /client\s*state/i, /state\s*of/i, /\bstate\b/i, /province/i, /location/i],
 };
+
+function cleanHeader(h) {
+  // Strip BOM, zero-width spaces, and other invisible chars, then trim
+  return h.replace(/[​-‍﻿ ]/g, '').trim();
+}
 
 function detectColumns(headers) {
   const map = {};
   for (const [field, patterns] of Object.entries(FIELD_PATTERNS)) {
     for (const h of headers) {
-      if (patterns.some(p => p.test(h.trim()))) {
+      if (patterns.some(p => p.test(cleanHeader(h)))) {
         map[field] = h;
         break;
       }

@@ -336,16 +336,31 @@ function loadFile(file){
 /* ── Filters ── */
 function initFilters(){
   const stateSet=new Set(), agentSet=new Set();
+  let minDate='', maxDate='';
   rawRows.forEach(r=>{
     if(colMap.state&&r[colMap.state]) stateSet.add(r[colMap.state].trim());
     if(colMap.agent&&r[colMap.agent]) agentSet.add(r[colMap.agent].trim());
+    if(colMap.enrolledDate){
+      const d=(r[colMap.enrolledDate]||'').trim().slice(0,10);
+      if(d){if(!minDate||d<minDate)minDate=d;if(!maxDate||d>maxDate)maxDate=d}
+    }
   });
+
+  /* Clear date inputs so browser autocomplete / stale values don't filter out all data */
+  document.getElementById('f_from').value='';
+  document.getElementById('f_to').value='';
+
   const fState=document.getElementById('f_state');
   const fAgent=document.getElementById('f_agent');
   fState.innerHTML='<option value="">All States</option>';
   [...stateSet].sort().forEach(s=>fState.innerHTML+=`<option>${s}</option>`);
   fAgent.innerHTML='<option value="">All Agents</option>';
   [...agentSet].sort().forEach(a=>fAgent.innerHTML+=`<option>${a}</option>`);
+
+  /* Show available date range as placeholder hints */
+  if(minDate) document.getElementById('f_from').placeholder=minDate;
+  if(maxDate) document.getElementById('f_to').placeholder=maxDate;
+
   ['f_from','f_to','f_state','f_agent'].forEach(id=>document.getElementById(id).addEventListener('change',applyFilters));
   document.getElementById('btnReset').addEventListener('click',()=>{
     ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');

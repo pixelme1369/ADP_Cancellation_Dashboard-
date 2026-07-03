@@ -720,9 +720,43 @@ function renderAgentChart(rows){
         x:{ticks:{color:'#8892b0',font:{size:10},callback:v=>v+'%'},grid:{color:'#2e3250'},max:100},
         y:{ticks:{color:'#8892b0',font:{size:10}},grid:{display:false}},
       }
-    }
+    },
+    plugins:[barPercentLabelsPlugin]
   });
 }
+
+/* Draws the value inside (or just past) each horizontal bar */
+const barPercentLabelsPlugin={
+  id:'barPercentLabels',
+  afterDatasetsDraw(chart){
+    const {ctx}=chart;
+    chart.data.datasets.forEach((dataset,di)=>{
+      const meta=chart.getDatasetMeta(di);
+      meta.data.forEach((bar,i)=>{
+        const value=dataset.data[i];
+        if(value==null)return;
+        const label=value+'%';
+        const {x,y,base}=bar.getProps(['x','y','base'],true);
+        ctx.save();
+        ctx.font='bold 10px sans-serif';
+        const textWidth=ctx.measureText(label).width;
+        const barWidth=Math.abs(x-base);
+        if(barWidth>textWidth+12){
+          ctx.fillStyle='#fff';
+          ctx.textAlign='right';
+          ctx.textBaseline='middle';
+          ctx.fillText(label,x-6,y);
+        }else{
+          ctx.fillStyle='#e8eaf6';
+          ctx.textAlign='left';
+          ctx.textBaseline='middle';
+          ctx.fillText(label,x+6,y);
+        }
+        ctx.restore();
+      });
+    });
+  }
+};
 
 /* ── Key Patterns ── */
 function renderPatterns(rows,cancelled,active,daysList,cancelRate){

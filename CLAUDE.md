@@ -19,6 +19,7 @@ These exact column names are auto-detected (with BOM/invisible-char stripping vi
 | State | `State` |
 | Created Date | `Created` |
 | Enrolled Debt | `Enrolled Debt` |
+| Zip Code | `Zip Code` |
 
 Additional columns detected by regex pattern fallback: `campaign`, `creditScore`, `monthlyIncome`.
 
@@ -44,18 +45,20 @@ The dashboard is structured as numbered findings with dynamic auto-generated tit
 | FINDING 4A | Cancel rate by credit score band |
 | FINDING 4B | State × debt range heatmap (top 10 states) |
 | FINDING 5 | Agent horizontal bar chart, auto-sized height by agent count |
+| FINDING 6 | Zip code horizontal bar chart (top 20 by cancel rate, min 3 enrollments/zip, labelled with state), auto-sized height |
 | KEY PATTERNS SUMMARY | 4 narrative blocks with colored left borders |
-| Tables | Sortable agent rankings + state breakdown side by side |
+| Tables | Sortable agent rankings + state breakdown side by side, plus a full-width zip code breakdown table (zip, state, enrolled, active, cancelled, rate) |
 
 ## Development Notes
 - All logic lives in a single `<script>` block at the bottom of `ADP_Cancellation_Dashboard.html`
-- `colMap` holds detected column mapping: `{ enrolledDate, droppedDate, agent, state, createdDate, debtAmount, campaign, creditScore, monthlyIncome }`
+- `colMap` holds detected column mapping: `{ enrolledDate, droppedDate, agent, state, createdDate, debtAmount, zipCode, campaign, creditScore, monthlyIncome }`
 - `rawRows` holds all parsed CSV rows; filters re-run `renderDashboard(filteredRows)`
 - `parseDate(s)` — handles `M/D/YY`, `M/D/YYYY`, and ISO formats; returns a `Date` or `null`
+- `zip5(z)` — normalises a zip code to its first 5 digits (collapses `ZIP+4` values like `75001-1234` into `75001`)
 - `cleanH(h)` — strips BOM/zero-width chars (U+200B, U+200C, U+200D, U+FEFF, U+00A0) but NOT regular spaces
 - Charts are stored in `charts` object and destroyed/recreated on each render via `destroyChart(id)`
 - `chartEmpty(canvasId, msg)` — shows overlay message on canvas when column is missing or data is empty
-- Sort state per table tracked in `sortState[tableId] = { col, dir }`
+- Sort state per table tracked in `sortState[tableId] = { col, dir }`; per-table column keys live in `sortTbl()`'s `keysMap`/`rowFns` (`tblAgent`, `tblState`, `tblZip`)
 - `applyFilters()` compares dates as timestamps (not strings) to handle the M/D/YY format correctly
 - `initFilters()` clears date inputs on each CSV load to prevent stale browser-remembered values
-- Branch for development: `claude/kind-gates-ywny4z`
+- Branch for development: `claude/cancellation-zipcode-state-ogarsb`

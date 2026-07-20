@@ -276,8 +276,8 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
   <!-- Control deck -->
   <div class="deck">
     <div class="toolbar">
-      <div class="fg"><label>Enrolled From</label><input type="date" id="f_from"></div>
-      <div class="fg"><label>Enrolled To</label><input type="date" id="f_to"></div>
+      <div class="fg"><label>Enrolled From</label><input type="date" id="f_from" autocomplete="off"></div>
+      <div class="fg"><label>Enrolled To</label><input type="date" id="f_to" autocomplete="off"></div>
       <div class="fg"><label>State</label><select id="f_state"><option value="">All States</option></select></div>
       <div class="fg"><label>Agent</label><select id="f_agent"><option value="">All Agents</option></select></div>
       <div class="fg"><label>Status</label><select id="f_status"><option value="">All</option><option value="active">Active only</option><option value="cancelled">Cancelled only</option></select></div>
@@ -288,6 +288,7 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
       <a class="navchip" href="#sec-trend">Cohort Trend</a>
       <a class="navchip" href="#sec-timing">Timing</a>
       <a class="navchip" href="#sec-segments">Segments</a>
+      <a class="navchip" href="#sec-geo">Geography</a>
       <a class="navchip" href="#sec-sources">Sources</a>
       <a class="navchip" href="#sec-team">Team</a>
       <a class="navchip" href="#sec-brief">Briefing</a>
@@ -384,9 +385,31 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
     </div>
   </div>
 
+  <!-- GEOGRAPHY -->
+  <div class="mod" id="sec-geo">
+    <div class="mod-head"><span class="mod-num">05</span><span class="mod-title">Geography</span><span class="mod-rule"></span></div>
+    <div class="card">
+      <div class="card-title" id="f6-title">Cancel rate by zip code</div>
+      <div class="card-sub">Top 20 zips with 3+ enrollments, ranked worst-first. Color flags severity.</div>
+      <div class="chart-wrap"><canvas id="chartZip"></canvas><div class="chart-empty-msg" id="chartZip-empty" style="display:none"></div></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title">Zip code breakdown</div>
+      <div class="card-sub">Sortable — click any column header.</div>
+      <div class="tbl-wrap"><table class="dash-tbl" id="tblZip"><thead><tr>
+        <th onclick="sortTbl('tblZip',0)">Zip Code<span class="sort-icon" id="si-tblZip-0"></span></th>
+        <th onclick="sortTbl('tblZip',1)">State<span class="sort-icon" id="si-tblZip-1"></span></th>
+        <th onclick="sortTbl('tblZip',2)">Enrolled<span class="sort-icon" id="si-tblZip-2"></span></th>
+        <th onclick="sortTbl('tblZip',3)">Active<span class="sort-icon" id="si-tblZip-3"></span></th>
+        <th onclick="sortTbl('tblZip',4)">Cancelled<span class="sort-icon" id="si-tblZip-4"></span></th>
+        <th onclick="sortTbl('tblZip',5)">Rate<span class="sort-icon" id="si-tblZip-5"></span></th>
+      </tr></thead><tbody id="tblZipBody"></tbody></table></div>
+    </div>
+  </div>
+
   <!-- SOURCES -->
   <div class="mod" id="sec-sources">
-    <div class="mod-head"><span class="mod-num">05</span><span class="mod-title">Source &amp; Campaign</span><span class="mod-rule"></span></div>
+    <div class="mod-head"><span class="mod-num">06</span><span class="mod-title">Source &amp; Campaign</span><span class="mod-rule"></span></div>
     <div class="card">
       <div class="card-title" id="f2-title">Cancellation rate by source / campaign</div>
       <div class="card-sub">Ranked worst-first. Bar length is relative to the highest-risk source; color flags severity.</div>
@@ -396,7 +419,7 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
 
   <!-- TEAM -->
   <div class="mod" id="sec-team">
-    <div class="mod-head"><span class="mod-num">06</span><span class="mod-title">Team Performance</span><span class="mod-rule"></span></div>
+    <div class="mod-head"><span class="mod-num">07</span><span class="mod-title">Team Performance</span><span class="mod-rule"></span></div>
     <div class="grid-3">
       <div class="card">
         <div class="card-title" id="f5-title">Cancel rate by agent</div>
@@ -419,7 +442,7 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
 
   <!-- BRIEFING -->
   <div class="mod" id="sec-brief">
-    <div class="mod-head"><span class="mod-num">07</span><span class="mod-title">Intelligence Briefing</span><span class="mod-rule"></span></div>
+    <div class="mod-head"><span class="mod-num">08</span><span class="mod-title">Intelligence Briefing</span><span class="mod-rule"></span></div>
     <div class="brief-grid" id="briefGrid">
       <div class="brief b-red"><div class="b-flag"><i></i>Loading</div><div class="b-title">—</div><div class="b-body">Reading data…</div></div>
       <div class="brief b-amber"><div class="b-flag"><i></i>Loading</div><div class="b-title">—</div><div class="b-body">Reading data…</div></div>
@@ -450,7 +473,7 @@ const C={blue:'#3987e5',red:'#e5484d',amber:'#fbbf24',green:'#2ecc8f',violet:'#9
 const AX={ticks:{color:C.muted,font:{size:10.5}},grid:{color:C.grid}};
 
 /* ── Column detection ── */
-const EXACT={enrolledDate:'Cordoba Enrolled Date',droppedDate:'Cordoba Dropped Date',agent:'Assigned To',state:'State',createdDate:'Created',debtAmount:'Enrolled Debt'};
+const EXACT={enrolledDate:'Cordoba Enrolled Date',droppedDate:'Cordoba Dropped Date',agent:'Assigned To',state:'State',createdDate:'Created',debtAmount:'Enrolled Debt',zipCode:'Zip'};
 const PATTERNS={campaign:/campaign|source|lead.?source|channel/i,creditScore:/credit.?score|fico/i,monthlyIncome:/monthly.?income|income/i};
 
 function cleanH(h){return h.replace(/[​‌‍﻿ ]/g,'').trim()}
@@ -509,6 +532,8 @@ function initFilters(){
   const minDate=toISO(minTs), maxDate=toISO(maxTs);
 
   document.getElementById('f_from').value=''; document.getElementById('f_to').value='';
+  /* Re-clear on the next tick in case browser autofill races the assignment */
+  setTimeout(()=>{document.getElementById('f_from').value='';document.getElementById('f_to').value=''},0);
 
   const fState=document.getElementById('f_state'), fAgent=document.getElementById('f_agent');
   fState.innerHTML='<option value="">All States</option>';
@@ -565,6 +590,7 @@ function parseDate(s){
   const d=new Date(s);return isNaN(d)?null:d;
 }
 function monthKey(d){return d?d.toISOString().slice(0,7):null}
+function zip5(z){if(!z)return'';const m=(''+z).trim().match(/^\d{5}/);return m?m[0]:(''+z).trim()}
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
 function chartEmpty(id,msg){const el=document.getElementById(id+'-empty');if(el){el.style.display=msg?'flex':'none';el.textContent=msg||''}}
 
@@ -620,9 +646,11 @@ function renderDashboard(rows){
   renderHeatmap(rows);
   renderAgentChart(rows);
   renderCampaignBars(rows,cancelled);
+  renderZipChart(rows);
   renderPatterns(rows,cancelled,active,daysList,cancelRate,riskDebt);
   renderAgentTable(rows);
   renderStateTable(rows);
+  renderZipTable(rows);
 }
 
 /* ── Cohort volume (grouped bars, single count axis) ── */
@@ -824,6 +852,30 @@ function renderAgentChart(rows){
   });
 }
 
+/* ── Zip code chart ── */
+function renderZipChart(rows){
+  destroyChart('chartZip'); chartEmpty('chartZip','');
+  if(!colMap.zipCode){chartEmpty('chartZip','No zip code column detected');return}
+  const zipMap={};
+  rows.forEach(r=>{const z=zip5(r[colMap.zipCode]);if(!z)return;if(!zipMap[z])zipMap[z]={enr:0,can:0,state:(r[colMap.state]||'').trim()};zipMap[z].enr++;if(isCancelled(r))zipMap[z].can++});
+  const entries=Object.entries(zipMap).filter(([,v])=>v.enr>=3).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr)).slice(0,20);
+  if(!entries.length){chartEmpty('chartZip','Insufficient zip code data (need 3+ enrollments per zip)');return}
+  const labels=entries.map(([z,v])=>v.state?`${z} (${v.state})`:z);
+  const rates=entries.map(([,v])=>+(v.can/v.enr*100).toFixed(1));
+  const counts=entries.map(([,v])=>v.enr);
+  document.getElementById('chartZip').style.height=Math.max(240,labels.length*30)+'px';
+  const [worstZip,worstV]=entries[0];
+  document.getElementById('f6-title').textContent=`Zip ${worstZip}${worstV.state?' ('+worstV.state+')':''} leads cancellations (${rates[0]}%) — ${entries.length} zips compared`;
+  const colors=rates.map(r=>r>=40?C.red:r>=25?C.amber:C.green);
+  charts.chartZip=new Chart(document.getElementById('chartZip'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Cancel Rate %',data:rates,backgroundColor:colors,borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.raw}% cancel rate (n=${counts[c.dataIndex]})`}}},
+      scales:{x:{...AX,max:100,ticks:{...AX.ticks,callback:v=>v+'%'}},y:{...AX,grid:{display:false}}}}
+  });
+}
+
 /* ── Campaign / source bars ── */
 function renderCampaignBars(rows,cancelled){
   const el=document.getElementById('campBars');
@@ -893,23 +945,34 @@ function renderStateTable(rows){
   stateTableData=Object.entries(map).map(([name,v])=>({name,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0})).sort((a,b)=>b.rate-a.rate);
   renderTableRows('tblStateBody',stateTableData,r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`);
 }
+let zipTableData=[];
+function renderZipTable(rows){
+  if(!colMap.zipCode){document.getElementById('tblZipBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip code column</td></tr>';return}
+  const map={};
+  rows.forEach(r=>{const z=zip5(r[colMap.zipCode]);if(!z)return;if(!map[z])map[z]={enr:0,active:0,can:0,state:(r[colMap.state]||'').trim()};map[z].enr++;if(isCancelled(r))map[z].can++;else map[z].active++});
+  zipTableData=Object.entries(map).map(([zip,v])=>({zip,state:v.state,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0})).sort((a,b)=>b.rate-a.rate);
+  renderTableRows('tblZipBody',zipTableData,zipRowFn);
+}
+const zipRowFn=r=>`<td>${r.zip}</td><td>${r.state||'—'}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`;
 function renderTableRows(tbodyId,data,rowFn){document.getElementById(tbodyId).innerHTML=data.map(r=>`<tr>${rowFn(r)}</tr>`).join('')}
 
 /* ── Sort ── */
 function sortTbl(tblId,colIdx){
-  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData};
+  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData,tblZip:()=>zipTableData};
   const data=dataMap[tblId]?.(); if(!data)return;
   if(!sortState[tblId])sortState[tblId]={col:-1,dir:1};
   const st=sortState[tblId];
   st.dir=st.col===colIdx?-st.dir:1; st.col=colIdx;
-  const keys=['name','enr','active','can','rate'];
+  const keysMap={tblAgent:['name','enr','active','can','rate'],tblState:['name','enr','active','can','rate'],tblZip:['zip','state','enr','active','can','rate']};
+  const keys=keysMap[tblId];
   data.sort((a,b)=>{const av=a[keys[colIdx]],bv=b[keys[colIdx]];return typeof av==='string'?av.localeCompare(bv)*st.dir:(av-bv)*st.dir});
   document.querySelectorAll(`[id^="si-${tblId}-"]`).forEach(el=>{el.textContent='';el.classList.remove('active')});
   const si=document.getElementById(`si-${tblId}-${colIdx}`);
   if(si){si.textContent=st.dir>0?' ▲':' ▼';si.classList.add('active')}
-  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody'};
-  const rowFn=r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`;
-  renderTableRows(tbodyMap[tblId],data,rowFn);
+  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody',tblZip:'tblZipBody'};
+  const stdRowFn=r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`;
+  const rowFns={tblAgent:stdRowFn,tblState:stdRowFn,tblZip:zipRowFn};
+  renderTableRows(tbodyMap[tblId],data,rowFns[tblId]);
 }
 
 /* ── Export current filtered slice ── */

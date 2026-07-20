@@ -240,6 +240,13 @@ table.dash-tbl tr:hover td{background:rgba(108,99,255,.04)}
     <div class="chart-wrap"><canvas id="chartAgent"></canvas><div class="chart-empty-msg" id="chartAgent-empty" style="display:none"></div></div>
   </div>
 
+  <!-- Finding 6: Zip code chart -->
+  <div class="section card" id="f6-section">
+    <div class="section-label">FINDING 6</div>
+    <div class="finding-title" id="f6-title">Cancel rate by zip code</div>
+    <div class="chart-wrap"><canvas id="chartZip"></canvas><div class="chart-empty-msg" id="chartZip-empty" style="display:none"></div></div>
+  </div>
+
   <!-- Key Patterns Summary -->
   <div class="section-label" style="margin-bottom:14px">KEY PATTERNS SUMMARY</div>
   <div class="patterns-grid" id="patternsGrid">
@@ -272,6 +279,18 @@ table.dash-tbl tr:hover td{background:rgba(108,99,255,.04)}
       </tr></thead><tbody id="tblStateBody"></tbody></table></div>
     </div>
   </div>
+
+  <div class="card" style="margin-top:20px">
+    <div class="section-label" style="margin-bottom:12px">ZIP CODE BREAKDOWN</div>
+    <div class="tbl-wrap"><table class="dash-tbl" id="tblZip"><thead><tr>
+      <th onclick="sortTbl('tblZip',0)">Zip Code<span class="sort-icon" id="si-tblZip-0"></span></th>
+      <th onclick="sortTbl('tblZip',1)">State<span class="sort-icon" id="si-tblZip-1"></span></th>
+      <th onclick="sortTbl('tblZip',2)">Enrolled<span class="sort-icon" id="si-tblZip-2"></span></th>
+      <th onclick="sortTbl('tblZip',3)">Active<span class="sort-icon" id="si-tblZip-3"></span></th>
+      <th onclick="sortTbl('tblZip',4)">Cancelled<span class="sort-icon" id="si-tblZip-4"></span></th>
+      <th onclick="sortTbl('tblZip',5)">Rate<span class="sort-icon" id="si-tblZip-5"></span></th>
+    </tr></thead><tbody id="tblZipBody"></tbody></table></div>
+  </div>
 </div>
 
 <script>
@@ -283,6 +302,7 @@ const EXACT = {
   state:'State',
   createdDate:'Created',
   debtAmount:'Enrolled Debt',
+  zipCode:'Zip Code',
 };
 const PATTERNS = {
   campaign:/campaign|source|lead.?source|channel/i,
@@ -413,6 +433,7 @@ function parseDate(s){
   return isNaN(d)?null:d;
 }
 function monthKey(d){return d?d.toISOString().slice(0,7):null}
+function zip5(z){if(!z)return'';const m=(''+z).trim().match(/^\d{5}/);return m?m[0]:(''+z).trim()}
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
 function chartEmpty(id,msg){
   const el=document.getElementById(id+'-empty');
@@ -456,9 +477,11 @@ function renderDashboard(rows){
   renderCreditChart(rows);
   renderHeatmap(rows);
   renderAgentChart(rows);
+  renderZipChart(rows);
   renderPatterns(rows,cancelled,active,daysList,cancelRate);
   renderAgentTable(rows);
   renderStateTable(rows);
+  renderZipTable(rows);
 }
 
 /* ── Finding 1: Cohort ── */
@@ -724,6 +747,47 @@ function renderAgentChart(rows){
   });
 }
 
+/* ── Finding 6: Zip code chart ── */
+function renderZipChart(rows){
+  destroyChart('chartZip');
+  chartEmpty('chartZip','');
+  if(!colMap.zipCode){chartEmpty('chartZip','No zip code column detected');return}
+
+  const zipMap={};
+  rows.forEach(r=>{
+    const z=zip5(r[colMap.zipCode]);
+    if(!z)return;
+    if(!zipMap[z])zipMap[z]={enr:0,can:0,state:(r[colMap.state]||'').trim()};
+    zipMap[z].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())zipMap[z].can++;
+  });
+  const entries=Object.entries(zipMap).filter(([,v])=>v.enr>=3).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr)).slice(0,20);
+  if(!entries.length){chartEmpty('chartZip','Insufficient zip code data (need ≥3 enrollments per zip)');return}
+
+  const labels=entries.map(([z,v])=>v.state?`${z} (${v.state})`:z);
+  const rates=entries.map(([,v])=>+(v.can/v.enr*100).toFixed(1));
+  const heights=Math.max(260,labels.length*28);
+  document.getElementById('chartZip').style.height=heights+'px';
+
+  const [worstZip,worstV]=entries[0];
+  document.getElementById('f6-title').textContent=`Zip ${worstZip}${worstV.state?' ('+worstV.state+')':''} has the highest cancel rate (${rates[0]}%) — ${entries.length} zip codes compared`;
+
+  const colors=rates.map(r=>r>=40?'rgba(255,91,91,.7)':r>=25?'rgba(245,166,35,.7)':'rgba(0,212,170,.7)');
+  const ctx=document.getElementById('chartZip').getContext('2d');
+  charts.chartZip=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Cancel Rate %',data:rates,backgroundColor:colors,borderRadius:4}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw}% cancel rate`}}},
+      scales:{
+        x:{ticks:{color:'#8892b0',font:{size:10},callback:v=>v+'%'},grid:{color:'#2e3250'},max:100},
+        y:{ticks:{color:'#8892b0',font:{size:10}},grid:{display:false}},
+      }
+    }
+  });
+}
+
 /* ── Key Patterns ── */
 function renderPatterns(rows,cancelled,active,daysList,cancelRate){
   const grid=document.getElementById('patternsGrid');
@@ -809,6 +873,22 @@ function renderStateTable(rows){
 }
 let stateTableData=[];
 
+function renderZipTable(rows){
+  if(!colMap.zipCode){document.getElementById('tblZipBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip code column</td></tr>';return}
+  const map={};
+  rows.forEach(r=>{
+    const z=zip5(r[colMap.zipCode]);
+    if(!z)return;
+    if(!map[z])map[z]={enr:0,active:0,can:0,state:(r[colMap.state]||'').trim()};
+    map[z].enr++;
+    if(r[colMap.droppedDate]&&r[colMap.droppedDate].trim())map[z].can++;else map[z].active++;
+  });
+  zipTableData=Object.entries(map).map(([zip,v])=>({zip,state:v.state,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0}));
+  zipTableData.sort((a,b)=>b.rate-a.rate);
+  renderTableRows('tblZipBody',zipTableData,r=>`<td>${r.zip}</td><td>${r.state||'—'}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`);
+}
+let zipTableData=[];
+
 function renderTableRows(tbodyId,data,rowFn){
   const tbody=document.getElementById(tbodyId);
   tbody.innerHTML=data.map(r=>`<tr>${rowFn(r)}</tr>`).join('');
@@ -816,7 +896,7 @@ function renderTableRows(tbodyId,data,rowFn){
 
 /* ── Sort ── */
 function sortTbl(tblId,colIdx){
-  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData};
+  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData,tblZip:()=>zipTableData};
   const data=dataMap[tblId]?.();
   if(!data)return;
 
@@ -825,7 +905,12 @@ function sortTbl(tblId,colIdx){
   st.dir=st.col===colIdx?-st.dir:1;
   st.col=colIdx;
 
-  const keys=['name','enr','active','can','rate'];
+  const keysMap={
+    tblAgent:['name','enr','active','can','rate'],
+    tblState:['name','enr','active','can','rate'],
+    tblZip:['zip','state','enr','active','can','rate'],
+  };
+  const keys=keysMap[tblId];
   data.sort((a,b)=>{
     const av=a[keys[colIdx]],bv=b[keys[colIdx]];
     return typeof av==='string'?av.localeCompare(bv)*st.dir:(av-bv)*st.dir;
@@ -837,10 +922,11 @@ function sortTbl(tblId,colIdx){
   const si=document.getElementById(`si-${tblId}-${colIdx}`);
   if(si){si.textContent=st.dir>0?' ▲':' ▼';si.classList.add('active')}
 
-  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody'};
+  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody',tblZip:'tblZipBody'};
   const rowFns={
     tblAgent:r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`,
     tblState:r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`,
+    tblZip:r=>`<td>${r.zip}</td><td>${r.state||'—'}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`,
   };
   renderTableRows(tbodyMap[tblId],data,rowFns[tblId]);
 }

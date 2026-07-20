@@ -155,11 +155,11 @@ table.dash-tbl tr:hover td{background:rgba(108,99,255,.04)}
   <div class="toolbar">
     <div class="fg">
       <label>Enrolled From</label>
-      <input type="date" id="f_from">
+      <input type="date" id="f_from" autocomplete="off">
     </div>
     <div class="fg">
       <label>Enrolled To</label>
-      <input type="date" id="f_to">
+      <input type="date" id="f_to" autocomplete="off">
     </div>
     <div class="fg">
       <label>State</label>
@@ -368,9 +368,15 @@ function initFilters(){
   const toISO=ts=>ts===Infinity||ts===-Infinity?'':new Date(ts).toISOString().slice(0,10);
   const minDate=toISO(minTs), maxDate=toISO(maxTs);
 
-  /* Clear date inputs so browser autocomplete / stale values don't filter out all data */
+  /* Clear date inputs so browser autocomplete / stale values don't filter out all data.
+     autocomplete="off" on these inputs stops the browser from re-filling remembered
+     values, but re-clear on the next tick too in case autofill still races the assignment. */
   document.getElementById('f_from').value='';
   document.getElementById('f_to').value='';
+  setTimeout(()=>{
+    document.getElementById('f_from').value='';
+    document.getElementById('f_to').value='';
+  },0);
 
   const fState=document.getElementById('f_state');
   const fAgent=document.getElementById('f_agent');

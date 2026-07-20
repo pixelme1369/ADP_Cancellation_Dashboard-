@@ -19,7 +19,7 @@ These exact column names are auto-detected (with BOM/invisible-char stripping vi
 | State | `State` |
 | Created Date | `Created` |
 | Enrolled Debt | `Enrolled Debt` |
-| Zip Code | `Zip Code` |
+| Zip Code | `Zip` |
 
 Additional columns detected by regex pattern fallback: `campaign`, `creditScore`, `monthlyIncome`.
 

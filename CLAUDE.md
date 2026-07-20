@@ -32,30 +32,38 @@ The CRM export uses `M/D/YY` or `M/D/YYYY` format (e.g. `6/19/26`, `6/19/2026 13
 - **Cancelled** — has both Enrolled Date and Dropped Date
 - **Cancellation Ratio** — Cancelled ÷ (Active Enrolled + Cancelled)
 
-## Layout — FINDING N Sections
-The dashboard is structured as numbered findings with dynamic auto-generated titles:
+## Layout — Command Center Modules
+The dashboard is a "Cancellation Command Center": a sticky command bar (brand, live-status pill with record count + date range, Export CSV, New file) over a sticky control deck (filters + section-jump nav chips), then numbered analytical modules with dynamic auto-generated titles. Dark theme is deliberate (an ops-center surface, not an auto light/dark flip).
 
-| Section | Content |
+| Module | Content |
 |---|---|
-| PORTFOLIO OVERVIEW | 4-card KPI grid (Total, Active, Cancelled, Rate) with sub-labels |
-| FINDING 1 | Dual-axis cohort chart (enrollments + cancellations bar, cancel rate % line) |
-| FINDING 2 | Campaign/source inline horizontal bars, color-coded by cancel rate |
-| FINDING 3 | Days-to-cancellation bar chart + two callout boxes (early exits, median) |
-| FINDING 4A | Cancel rate by credit score band |
-| FINDING 4B | State × debt range heatmap (top 10 states) |
-| FINDING 5 | Agent horizontal bar chart, auto-sized height by agent count |
-| KEY PATTERNS SUMMARY | 4 narrative blocks with colored left borders |
-| Tables | Sortable agent rankings + state breakdown side by side |
+| 01 PORTFOLIO VITALS | 6-card KPI strip (Total, Active, Cancelled, Cancel Rate, Debt at Risk, Median Tenure) with status-colored left borders and sub-labels |
+| 02 COHORT TREND | Two **single-axis** charts (no dual-axis): grouped enroll/cancel volume bars + a separate cancel-rate % line |
+| 03 TIMING & SURVIVAL | Days-to-cancellation histogram + two callouts (early exits, median), and a cumulative-cancellation % curve |
+| 04 SEGMENT RISK | Cancel rate by credit band + by enrolled-debt band (ordinal blue ramps), state × debt heatmap (top 10, green→amber→red), and sortable state table |
+| 05 SOURCE & CAMPAIGN | Campaign/source inline horizontal bars, color-coded by cancel rate |
+| 06 TEAM PERFORMANCE | Agent horizontal bar chart (auto-sized height) + sortable agent rankings table |
+| 07 INTELLIGENCE BRIEFING | 4 flagged narrative cards (state / timing / team / portfolio) with colored left borders |
+
+### Data-viz rules honored (dataviz skill)
+- **No dual-axis charts.** Cohort volume and cohort rate are two separate one-axis charts.
+- Meaning-colors ship with labels/legends, never color-alone: `--blue` enrollments, `--red` cancelled/critical, `--amber` cancel-rate/caution, `--green` active/retained. Palette CVD-validated against the dark surface.
+- Ordinal segment ramps use a single-hue blue ramp; the heatmap is a green→amber→red sequential scale with a legend.
 
 ## Development Notes
 - All logic lives in a single `<script>` block at the bottom of `ADP_Cancellation_Dashboard.html`
 - `colMap` holds detected column mapping: `{ enrolledDate, droppedDate, agent, state, createdDate, debtAmount, campaign, creditScore, monthlyIncome }`
-- `rawRows` holds all parsed CSV rows; filters re-run `renderDashboard(filteredRows)`
+- `rawRows` holds all parsed CSV rows; `filteredRows` holds the current slice; filters re-run `renderDashboard(rows)`
 - `parseDate(s)` — handles `M/D/YY`, `M/D/YYYY`, and ISO formats; returns a `Date` or `null`
+- `isCancelled(r)` — single source of truth for "has a non-empty Cordoba Dropped Date"
 - `cleanH(h)` — strips BOM/zero-width chars (U+200B, U+200C, U+200D, U+FEFF, U+00A0) but NOT regular spaces
-- Charts are stored in `charts` object and destroyed/recreated on each render via `destroyChart(id)`
+- Chart.js is themed once via `Chart.defaults`; per-chart axis defaults live in the `AX` object and colors in `C`
+- Cohort series is computed once by `cohortSeries()` and shared by `renderVolumeChart()` and `renderRateChart()`
+- Charts are stored in `charts` object and destroyed/recreated on each render via `destroyChart(id)`. Canvas IDs: `chartVolume, chartRate, chartDays, chartCumulative, chartCredit, chartDebt, chartAgent`
 - `chartEmpty(canvasId, msg)` — shows overlay message on canvas when column is missing or data is empty
 - Sort state per table tracked in `sortState[tableId] = { col, dir }`
-- `applyFilters()` compares dates as timestamps (not strings) to handle the M/D/YY format correctly
+- `applyFilters()` compares dates as timestamps (not strings); adds a Status filter (all / active / cancelled)
 - `initFilters()` clears date inputs on each CSV load to prevent stale browser-remembered values
-- Branch for development: `claude/kind-gates-ywny4z`
+- `exportCSV()` downloads the current `filteredRows` slice; "New file" resets to the upload screen
+- Filters live in the sticky `.deck`; the `.navchip` anchors scroll-jump to each module (`#sec-*`)
+- Branch for development: `claude/cancellation-command-center-8iuwtt`

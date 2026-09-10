@@ -46,6 +46,7 @@ The dashboard is a "Cancellation Command Center": a sticky command bar (brand, l
 | 06 SOURCE & CAMPAIGN | Campaign/source inline horizontal bars, color-coded by cancel rate |
 | 07 TEAM PERFORMANCE | Agent horizontal bar chart (auto-sized height) + sortable agent rankings table |
 | 08 INTELLIGENCE BRIEFING | 4 flagged narrative cards (state / timing / team / portfolio) with colored left borders |
+| 09 LEAD SOURCING | Answers "where should my lead vendor pull from next?". Best states + best ZIP3 regions as retention bars, a proven-zips table, an **untapped zips** table (zips with zero records anywhere in the file that neighbour a winning zip inside the same ZIP3), and a copy-paste plain-text vendor brief. Has its own **Min enrollments / row** control (number input + 5/10/25/50 presets, default 10); a row must ALSO cancel less than the portfolio average to be recommended |
 
 ### Data-viz rules honored (dataviz skill)
 - **No dual-axis charts.** Cohort volume and cohort rate are two separate one-axis charts.
@@ -58,6 +59,10 @@ The dashboard is a "Cancellation Command Center": a sticky command bar (brand, l
 - `rawRows` holds all parsed CSV rows; `filteredRows` holds the current slice; filters re-run `renderDashboard(rows)`
 - `parseDate(s)` — handles `M/D/YY`, `M/D/YYYY`, and ISO formats; returns a `Date` or `null`
 - `zip5(z)` — normalises a zip code to its first 5 digits (collapses `ZIP+4` values like `75001-1234` into `75001`)
+- `leadMinEnr()` — reads the `#f_leadmin` control (clamped to >= 1, default 10) for module 09; `renderLeadViews()` re-renders just that module from `filteredRows`
+- Module 09 helpers: `tallyBy(rows,keyFn)` (enrolled/active/cancelled per key), `rankedByRetention(map,min)` (sample floor + best-first), `keepWinners(ranked,benchmark)` / `beatsBenchmark()` (a row is only recommended if it cancels less than the current selection's own rate), `retentionBars()` (inline bars, absolute 0-100% scale), `findUntapped()` (numeric neighbours within the same ZIP3 that appear nowhere in the file), `buildLeadBrief()` + `copyLeadBrief()` (plain-text vendor brief with clipboard fallback)
+- `allRows` holds **every** parsed CSV row including non-enrolled leads — used only to decide whether a zip has ever been touched. `rawRows` remains enrolled-only
+- Sortable tables added by module 09: `tblBestZip` (reuses `zipRowFn`) and `tblUntapped` (`untappedRowFn`); both are wired into `sortTbl()`'s maps
 - `zipMinEnr()` — reads the `#f_zipmin` control (clamped to >= 1, default 3); `renderZipChart()` and `renderZipTable()` both filter on it, and `renderZipViews()` re-renders just those two from `filteredRows` when it changes
 - `isCancelled(r)` — single source of truth for "has a non-empty Cordoba Dropped Date"
 - `cleanH(h)` — strips BOM/zero-width chars (U+200B, U+200C, U+200D, U+FEFF, U+00A0) but NOT regular spaces

@@ -112,16 +112,27 @@ body{
 
 /* ── Section headers ── */
 .mod{margin-top:34px;scroll-margin-top:230px}
-.mod-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+.mod-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
 .mod-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.1em;background:rgba(57,135,229,.1);border:1px solid rgba(57,135,229,.22);padding:3px 9px;border-radius:6px}
 .mod-title{font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--text2)}
 .mod-rule{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
-.mod-ctl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mod-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .mod-ctl label{font-size:10px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:700}
 .mod-ctl input{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:8px;font-size:13px;font-family:var(--mono);outline:none;transition:.15s;width:78px}
 .mod-ctl input:focus{border-color:var(--blue);background:var(--surface3)}
 .mod-ctl .mod-ctl-preset{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
 .mod-ctl .mod-ctl-preset:hover{border-color:var(--blue);color:var(--text)}
+
+/* ── Lead sourcing ── */
+.camp-n-wide{flex:0 0 160px;white-space:nowrap}
+.lead-note{display:flex;align-items:flex-start;gap:9px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:var(--radius-sm);padding:11px 13px;font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:14px}
+.lead-note b{color:var(--text)}
+.card-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.btn-copy{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:8px 15px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:.15s;white-space:nowrap;flex-shrink:0}
+.btn-copy:hover{border-color:var(--green);color:var(--text)}
+.btn-copy.done{border-color:var(--green);color:var(--green)}
+.brief-pre{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.75;color:var(--text2);white-space:pre-wrap;word-break:break-word;max-height:460px;overflow:auto;margin:0}
+.tag-new{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);background:rgba(57,135,229,.12);border:1px solid rgba(57,135,229,.28);padding:2px 7px;border-radius:5px}
 
 /* ── KPI vitals ── */
 .vitals{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
@@ -227,6 +238,14 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
   body{background:#fff;color:#000}
   .navchips{display:none}
 }
+/* Narrow screens: stack each bar row so the bar keeps a readable length */
+@media (max-width:700px){
+  .camp-row{flex-wrap:wrap;gap:6px 10px}
+  .camp-name{flex:1 1 auto;order:1}
+  .camp-pct{order:2;flex:0 0 auto}
+  .camp-bar-wrap{order:3;flex:1 1 100%}
+  .camp-n,.camp-n-wide{order:4;flex:1 1 100%;text-align:left}
+}
 </style>
 </head>
 <body>
@@ -298,6 +317,7 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
       <a class="navchip" href="#sec-sources">Sources</a>
       <a class="navchip" href="#sec-team">Team</a>
       <a class="navchip" href="#sec-brief">Briefing</a>
+      <a class="navchip" href="#sec-leads">Lead Sourcing</a>
     </div>
   </div>
 
@@ -458,6 +478,60 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
     </div>
   </div>
 
+  <!-- LEAD SOURCING -->
+  <div class="mod" id="sec-leads">
+    <div class="mod-head"><span class="mod-num">09</span><span class="mod-title">Lead Sourcing</span><span class="mod-rule"></span>
+      <span class="mod-ctl"><label for="f_leadmin">Min enrollments / row</label><input type="number" id="f_leadmin" min="1" step="1" value="10" autocomplete="off"><button type="button" class="mod-ctl-preset" data-leadmin="5">5</button><button type="button" class="mod-ctl-preset" data-leadmin="10">10</button><button type="button" class="mod-ctl-preset" data-leadmin="25">25</button><button type="button" class="mod-ctl-preset" data-leadmin="50">50</button></span>
+    </div>
+    <div class="lead-note"><span>Where to buy next. Rows are ranked <b>best-retention first</b> and only appear once they clear the minimum enrollment count above &mdash; raise it to get a stricter, more trustworthy list. A row must also cancel <b>less than your portfolio average</b> (<b id="leadBench">—</b>) to be recommended at all. Bars show the share of clients who <b>stayed</b>.</span></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title" id="f9-title">Best states &mdash; pull more leads here</div>
+        <div class="card-sub" id="f9-sub">Ranked by retention. Bar length is the share retained.</div>
+        <div id="leadStateBars"></div>
+      </div>
+      <div class="card">
+        <div class="card-title" id="f10-title">Best ZIP3 regions &mdash; pull more leads here</div>
+        <div class="card-sub" id="f10-sub">First 3 digits of the zip &mdash; the area a lead vendor can actually filter on.</div>
+        <div id="leadRegionBars"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title" id="f11-title">Proven zips &mdash; ask for more of these by name</div>
+      <div class="card-sub" id="tblBestZip-sub">Sortable &mdash; click any column header.</div>
+      <div class="tbl-wrap"><table class="dash-tbl" id="tblBestZip"><thead><tr>
+        <th onclick="sortTbl('tblBestZip',0)">Zip Code<span class="sort-icon" id="si-tblBestZip-0"></span></th>
+        <th onclick="sortTbl('tblBestZip',1)">State<span class="sort-icon" id="si-tblBestZip-1"></span></th>
+        <th onclick="sortTbl('tblBestZip',2)">Enrolled<span class="sort-icon" id="si-tblBestZip-2"></span></th>
+        <th onclick="sortTbl('tblBestZip',3)">Active<span class="sort-icon" id="si-tblBestZip-3"></span></th>
+        <th onclick="sortTbl('tblBestZip',4)">Cancelled<span class="sort-icon" id="si-tblBestZip-4"></span></th>
+        <th onclick="sortTbl('tblBestZip',5)">Cancel Rate<span class="sort-icon" id="si-tblBestZip-5"></span></th>
+      </tr></thead><tbody id="tblBestZipBody"></tbody></table></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-title" id="f12-title">Untapped zips &mdash; never worked, next door to a winner</div>
+      <div class="card-sub" id="tblUntapped-sub">Zips with <b>zero records anywhere in your file</b> that sit inside the same ZIP3 region as one of your best zips. Numeric neighbours are usually &mdash; but not always &mdash; geographically close, so spot-check before buying volume.</div>
+      <div class="tbl-wrap"><table class="dash-tbl" id="tblUntapped"><thead><tr>
+        <th onclick="sortTbl('tblUntapped',0)">Untouched Zip<span class="sort-icon" id="si-tblUntapped-0"></span></th>
+        <th onclick="sortTbl('tblUntapped',1)">State<span class="sort-icon" id="si-tblUntapped-1"></span></th>
+        <th onclick="sortTbl('tblUntapped',2)">Next To<span class="sort-icon" id="si-tblUntapped-2"></span></th>
+        <th onclick="sortTbl('tblUntapped',3)">That Zip&#39;s Cancel Rate<span class="sort-icon" id="si-tblUntapped-3"></span></th>
+        <th onclick="sortTbl('tblUntapped',4)">Region<span class="sort-icon" id="si-tblUntapped-4"></span></th>
+        <th onclick="sortTbl('tblUntapped',5)">Region Cancel Rate<span class="sort-icon" id="si-tblUntapped-5"></span></th>
+      </tr></thead><tbody id="tblUntappedBody"></tbody></table></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="card-head-row">
+        <div>
+          <div class="card-title">Brief for your lead vendor</div>
+          <div class="card-sub">Everything above as plain text &mdash; send it as-is. Updates with your filters and the minimum above.</div>
+        </div>
+        <button class="btn-copy" id="btnCopyBrief">Copy brief</button>
+      </div>
+      <pre class="brief-pre" id="leadBrief">Load a CSV to generate the brief.</pre>
+    </div>
+  </div>
+
   <div class="footer-note">Built for operators — we build, we run, we own the number. · Cancellation Command Center</div>
 </div>
 
@@ -485,7 +559,7 @@ const PATTERNS={campaign:/campaign|source|lead.?source|channel/i,creditScore:/cr
 
 function cleanH(h){return h.replace(/[​‌‍﻿ ]/g,'').trim()}
 
-let colMap={}, rawRows=[], filteredRows=[], charts={}, sortState={};
+let colMap={}, rawRows=[], allRows=[], filteredRows=[], charts={}, sortState={};
 
 function detectColumns(headers){
   const map={}; const cleaned=headers.map(cleanH);
@@ -515,6 +589,7 @@ document.getElementById('btnExport').addEventListener('click',exportCSV);
 function loadFile(file){
   Papa.parse(file,{header:true,skipEmptyLines:true,complete(res){
     colMap=detectColumns(res.meta.fields||[]);
+    allRows=res.data||[];
     rawRows=colMap.enrolledDate?res.data.filter(r=>r[colMap.enrolledDate]&&r[colMap.enrolledDate].trim()):[];
     initFilters();
     document.getElementById('uploadSection').style.display='none';
@@ -555,17 +630,27 @@ function initFilters(){
   ['f_from','f_to','f_state','f_agent','f_status'].forEach(id=>document.getElementById(id).addEventListener('change',applyFilters));
 
   /* Zip minimum-enrollment threshold — re-renders only the geography views */
+  const fLeadMin=document.getElementById('f_leadmin');
+  fLeadMin.value=10;
+  if(!fLeadMin.dataset.bound){
+    fLeadMin.dataset.bound='1';
+    fLeadMin.addEventListener('input',renderLeadViews);
+    document.querySelectorAll('.mod-ctl-preset[data-leadmin]').forEach(b=>b.addEventListener('click',()=>{fLeadMin.value=b.dataset.leadmin;renderLeadViews()}));
+    document.getElementById('btnCopyBrief').addEventListener('click',copyLeadBrief);
+  }
+
   const fZipMin=document.getElementById('f_zipmin');
   fZipMin.value=3;
   if(!fZipMin.dataset.bound){
     fZipMin.dataset.bound='1';
     fZipMin.addEventListener('input',renderZipViews);
-    document.querySelectorAll('.mod-ctl-preset').forEach(b=>b.addEventListener('click',()=>{fZipMin.value=b.dataset.zipmin;renderZipViews()}));
+    document.querySelectorAll('.mod-ctl-preset[data-zipmin]').forEach(b=>b.addEventListener('click',()=>{fZipMin.value=b.dataset.zipmin;renderZipViews()}));
   }
   document.getElementById('btnReset').addEventListener('click',()=>{
     ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('f_state').value=''; document.getElementById('f_agent').value=''; document.getElementById('f_status').value='';
     document.getElementById('f_zipmin').value=3;
+    document.getElementById('f_leadmin').value=10;
     renderDashboard(rawRows);
   });
 }
@@ -668,6 +753,7 @@ function renderDashboard(rows){
   renderAgentTable(rows);
   renderStateTable(rows);
   renderZipTable(rows);
+  renderLeadSourcing(rows);
 }
 
 /* ── Cohort volume (grouped bars, single count axis) ── */
@@ -930,6 +1016,226 @@ function renderCampaignBars(rows,cancelled){
   }).join('');
 }
 
+/* ── Lead sourcing ─────────────────────────────────────────────────────────
+   Answers "where should my lead source pull from next?" — best states, best
+   ZIP3 regions and best exact zips by RETENTION, plus zips we have never
+   touched that sit beside a proven winner.                                  */
+function leadMinEnr(){
+  const el=document.getElementById('f_leadmin');
+  const n=parseInt(el&&el.value,10);
+  return (isNaN(n)||n<1)?1:n;
+}
+function renderLeadViews(){renderLeadSourcing(filteredRows)}
+
+let bestZipData=[], untappedData=[];
+const untappedRowFn=r=>`<td>${r.zip} <span class="tag-new">new</span></td><td>${r.state||'—'}</td><td>${r.near}</td><td>${rateBadge(r.nearRate)}</td><td>${r.region}xx</td><td>${rateBadge(r.regionRate)}</td>`;
+
+/* Tally enrolled/active/cancelled per key. keyFn returns '' to skip a row. */
+function tallyBy(rows,keyFn){
+  const m={};
+  rows.forEach(r=>{
+    const k=keyFn(r); if(!k)return;
+    if(!m[k])m[k]={enr:0,active:0,can:0,state:'',zips:new Set()};
+    m[k].enr++;
+    if(isCancelled(r))m[k].can++; else m[k].active++;
+    if(!m[k].state&&colMap.state)m[k].state=(r[colMap.state]||'').trim();
+    if(colMap.zipCode){const z=zip5(r[colMap.zipCode]);if(z)m[k].zips.add(z)}
+  });
+  return m;
+}
+/* Everything meeting the sample floor, best retention first. */
+function rankedByRetention(map,minEnr){
+  return Object.entries(map).filter(([,v])=>v.enr>=minEnr).sort((a,b)=>(a[1].can/a[1].enr)-(b[1].can/b[1].enr));
+}
+/* A row only earns a "buy here" slot if it beats the portfolio's own cancel rate —
+   otherwise the list would recommend places that cancel half the time. */
+function beatsBenchmark(rate,benchmark){return benchmark>0?rate<benchmark:rate<=0}
+function keepWinners(ranked,benchmark){return ranked.filter(([,v])=>beatsBenchmark(v.can/v.enr,benchmark))}
+const rateColor=rate=>rate>=0.4?C.red:rate>=0.25?C.amber:C.green;
+
+/* Horizontal retention bars — absolute 0–100% scale, every row directly labelled. */
+function retentionBars(elId,entries,labelFn,emptyMsg){
+  const el=document.getElementById(elId);
+  if(!entries.length){el.innerHTML=`<div style="color:var(--muted);font-size:13px">${emptyMsg}</div>`;return}
+  el.innerHTML=entries.map(([name,v])=>{
+    const rate=v.can/v.enr, ret=1-rate, label=labelFn(name,v);
+    return`<div class="camp-row" title="${label} — ${v.enr} enrolled, ${v.active} still active, ${v.can} cancelled">`+
+      `<div class="camp-name">${label}</div>`+
+      `<div class="camp-bar-wrap"><div class="camp-bar" style="width:${(ret*100).toFixed(1)}%;background:${rateColor(rate)}"></div></div>`+
+      `<div class="camp-pct">${(ret*100).toFixed(0)}%</div>`+
+      `<div class="camp-n camp-n-wide">kept · ${(rate*100).toFixed(0)}% cx · ${v.enr} enr</div></div>`;
+  }).join('');
+}
+
+/* Zips with zero records ANYWHERE in the file that neighbour a winning zip.
+   Neighbours stay inside the same ZIP3 so we never jump across the country. */
+function findUntapped(topZips,regionMap,touched,span){
+  const out=[], seen=new Set();
+  topZips.forEach(([z,v])=>{
+    const n=parseInt(z,10); if(isNaN(n))return;
+    const region=z.slice(0,3), rv=regionMap[region];
+    for(let d=1;d<=span;d++){
+      [n-d,n+d].forEach(cand=>{
+        if(cand<0||cand>99999)return;
+        const cz=String(cand).padStart(5,'0');
+        if(cz.slice(0,3)!==region)return;
+        if(touched.has(cz)||seen.has(cz))return;
+        seen.add(cz);
+        out.push({zip:cz,state:v.state,near:z,nearRate:v.can/v.enr,nearEnr:v.enr,
+                  region,regionRate:rv?rv.can/rv.enr:v.can/v.enr,regionEnr:rv?rv.enr:v.enr,dist:d});
+      });
+    }
+  });
+  return out.sort((a,b)=>a.nearRate-b.nearRate||a.dist-b.dist||a.zip.localeCompare(b.zip));
+}
+
+function renderLeadSourcing(rows){
+  const minEnr=leadMinEnr();
+  const pctS=v=>`${(v*100).toFixed(0)}%`;
+  const setTxt=(id,t)=>{const el=document.getElementById(id);if(el)el.textContent=t};
+  const benchmark=rows.length?rows.filter(isCancelled).length/rows.length:0;
+  const floorNote=`Listed rows have ${minEnr}+ enrollments and beat your ${pctS(benchmark)} portfolio cancel rate.`;
+  setTxt('leadBench',pctS(benchmark));
+
+  /* ── States ── */
+  let bestStates=[], worstStates=[];
+  if(colMap.state){
+    const sm=tallyBy(rows,r=>(r[colMap.state]||'').trim());
+    const ranked=rankedByRetention(sm,minEnr);
+    bestStates=keepWinners(ranked,benchmark).slice(0,10);
+    worstStates=ranked.filter(([,v])=>!beatsBenchmark(v.can/v.enr,benchmark)).slice(-3).reverse();
+    retentionBars('leadStateBars',bestStates,n=>n,
+      ranked.length?`No state with ${minEnr}+ enrollments beats your ${pctS(benchmark)} portfolio cancel rate.`
+                   :`No state has ${minEnr}+ enrollments — lower the minimum.`);
+    if(bestStates.length){
+      const [bs,bv]=bestStates[0];
+      setTxt('f9-title',`${bs} retains best — ${pctS(1-bv.can/bv.enr)} of enrollments stay`);
+      setTxt('f9-sub',`${bestStates.length} state${bestStates.length===1?'':'s'} ranked by retention. ${floorNote} Bar length is the share retained.`);
+    }else{
+      setTxt('f9-title','No state clears the bar');
+      setTxt('f9-sub',`No state has ${minEnr}+ enrollments and beats your ${pctS(benchmark)} portfolio cancel rate.`);
+    }
+  }else{
+    document.getElementById('leadStateBars').innerHTML='<div style="color:var(--muted);font-size:13px">No state column detected in CSV</div>';
+    setTxt('f9-sub','No state column detected in CSV.');
+  }
+
+  /* ── ZIP3 regions + exact zips ── */
+  let bestRegions=[], bestZips=[], regionMap={};
+  if(colMap.zipCode){
+    regionMap=tallyBy(rows,r=>{const z=zip5(r[colMap.zipCode]);return z?z.slice(0,3):''});
+    const rankedRegions=rankedByRetention(regionMap,minEnr);
+    bestRegions=keepWinners(rankedRegions,benchmark).slice(0,10);
+    retentionBars('leadRegionBars',bestRegions,(n,v)=>`${n}xx${v.state?' · '+v.state:''} (${v.zips.size} zip${v.zips.size===1?'':'s'})`,
+      rankedRegions.length?`No region with ${minEnr}+ enrollments beats your ${pctS(benchmark)} portfolio cancel rate.`
+                          :`No ZIP3 region has ${minEnr}+ enrollments — lower the minimum.`);
+    if(bestRegions.length){
+      const [br,brv]=bestRegions[0];
+      setTxt('f10-title',`Region ${br}xx${brv.state?' ('+brv.state+')':''} retains best — ${pctS(1-brv.can/brv.enr)} stay`);
+      setTxt('f10-sub',`${bestRegions.length} region${bestRegions.length===1?'':'s'} ranked by retention. ${floorNote} A vendor can target a whole ZIP3.`);
+    }else{
+      setTxt('f10-title','No ZIP3 region clears the bar');
+      setTxt('f10-sub',`No region has ${minEnr}+ enrollments and beats your ${pctS(benchmark)} portfolio cancel rate.`);
+    }
+
+    const zm=tallyBy(rows,r=>zip5(r[colMap.zipCode]));
+    const rankedZips=rankedByRetention(zm,minEnr);
+    bestZips=keepWinners(rankedZips,benchmark).slice(0,25);
+    bestZipData=bestZips.map(([zip,v])=>({zip,state:v.state,enr:v.enr,active:v.active,can:v.can,rate:v.can/v.enr}));
+    if(bestZipData.length){
+      renderTableRows('tblBestZipBody',bestZipData,zipRowFn);
+      setTxt('f11-title',`${bestZipData.length} zip${bestZipData.length===1?' beats':'s beat'} your portfolio — best is ${bestZipData[0].zip} at ${pctS(1-bestZipData[0].rate)} retained`);
+      setTxt('tblBestZip-sub',`Best retention first. ${floorNote} Sortable — click any column header.`);
+    }else{
+      document.getElementById('tblBestZipBody').innerHTML=`<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip has ${minEnr}+ enrollments and beats your ${pctS(benchmark)} portfolio cancel rate</td></tr>`;
+      setTxt('f11-title','No zip clears the bar');
+      setTxt('tblBestZip-sub',`Needs ${minEnr}+ enrollments and a cancel rate under ${pctS(benchmark)}. Lower the minimum to widen the search.`);
+    }
+
+    /* Touched = every zip appearing anywhere in the file, enrolled or not. */
+    const touched=new Set();
+    (allRows.length?allRows:rawRows).forEach(r=>{const z=zip5(r[colMap.zipCode]);if(z)touched.add(z)});
+    untappedData=findUntapped(bestZips,regionMap,touched,3).slice(0,40);
+    if(untappedData.length){
+      renderTableRows('tblUntappedBody',untappedData,untappedRowFn);
+      setTxt('f12-title',`${untappedData.length} untapped zip${untappedData.length===1?'':'s'} next to your best performers`);
+    }else{
+      document.getElementById('tblUntappedBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No untapped neighbours — either no zip clears the bar above, or you have already worked every neighbouring zip</td></tr>';
+      setTxt('f12-title','Untapped zips — never worked, next door to a winner');
+    }
+  }else{
+    document.getElementById('leadRegionBars').innerHTML='<div style="color:var(--muted);font-size:13px">No zip code column detected in CSV</div>';
+    bestZipData=[]; untappedData=[];
+    document.getElementById('tblBestZipBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip code column</td></tr>';
+    document.getElementById('tblUntappedBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip code column</td></tr>';
+  }
+
+  buildLeadBrief(rows,minEnr,bestStates,worstStates,bestRegions,bestZipData,untappedData);
+}
+
+/* Plain-text brief the user can paste straight to a lead vendor. */
+function buildLeadBrief(rows,minEnr,bestStates,worstStates,bestRegions,bestZips,untapped){
+  const total=rows.length, can=rows.filter(isCancelled).length;
+  const pctS=v=>`${(v*100).toFixed(0)}%`;
+  const line=(i,txt)=>`  ${String(i+1).padStart(2)}. ${txt}`;
+  const L=[];
+  L.push('LEAD TARGETING BRIEF — '+new Date().toLocaleDateString('default',{year:'numeric',month:'long',day:'numeric'}));
+  L.push('='.repeat(58));
+  L.push(`Based on ${total.toLocaleString()} enrolled clients · ${pctS(total?can/total:0)} overall cancellation.`);
+  L.push('');
+  const headLen=L.length;
+
+  if(bestStates.length){
+    L.push('TIER 1 — STATES TO PULL FROM (best retention first)');
+    bestStates.slice(0,8).forEach(([n,v],i)=>L.push(line(i,`${n} — ${pctS(1-v.can/v.enr)} retained · ${pctS(v.can/v.enr)} cancel · ${v.enr} enrolled`)));
+    L.push('');
+  }
+  if(bestRegions.length){
+    L.push('TIER 2 — ZIP3 REGIONS (target the whole region)');
+    bestRegions.slice(0,8).forEach(([n,v],i)=>L.push(line(i,`${n}xx${v.state?' ('+v.state+')':''} — ${pctS(1-v.can/v.enr)} retained · ${v.enr} enrolled across ${v.zips.size} zip${v.zips.size===1?'':'s'}`)));
+    L.push('');
+  }
+  if(bestZips.length){
+    L.push('TIER 3 — EXACT ZIPS THAT ALREADY WORK');
+    bestZips.slice(0,15).forEach((r,i)=>L.push(line(i,`${r.zip}${r.state?' ('+r.state+')':''} — ${pctS(1-r.rate)} retained · ${r.enr} enrolled`)));
+    L.push('');
+  }
+  if(untapped.length){
+    L.push('EXPANSION — ZIPS WE HAVE NEVER TOUCHED (beside a proven zip above)');
+    const byNear={};
+    untapped.forEach(r=>{(byNear[r.near]=byNear[r.near]||{state:r.state,rate:r.nearRate,zips:[]}).zips.push(r.zip)});
+    Object.entries(byNear).slice(0,12).forEach(([near,g],i)=>
+      L.push(line(i,`${g.zips.join(', ')}${g.state?' ('+g.state+')':''} — next to ${near}, which retains ${pctS(1-g.rate)}`)));
+    L.push('  NOTE: these are numeric neighbours inside the same ZIP3. Verify they are');
+    L.push('        genuinely local before buying volume.');
+    L.push('');
+  }
+  if(worstStates.length){
+    L.push('DO NOT PULL — worst retention');
+    worstStates.forEach((e,i)=>L.push(line(i,`${e[0]} — ${pctS(e[1].can/e[1].enr)} cancel rate · ${e[1].enr} enrolled`)));
+    L.push('');
+  }
+  if(L.length===headLen){
+    L.push(`Nothing qualifies at ${minEnr}+ enrollments per row. Lower "Min enrollments / row" or load a larger export.`);
+  }else{
+    L.splice(headLen-1,0,`Every line below has ${minEnr}+ enrollments AND cancels less than the ${pctS(total?can/total:0)} portfolio average — real volume, proven performance.`);
+  }
+  document.getElementById('leadBrief').textContent=L.join('\n');
+}
+
+function copyLeadBrief(){
+  const txt=document.getElementById('leadBrief').textContent;
+  const btn=document.getElementById('btnCopyBrief');
+  const done=ok=>{btn.textContent=ok?'Copied ✓':'Press Ctrl+C';btn.classList.toggle('done',ok);setTimeout(()=>{btn.textContent='Copy brief';btn.classList.remove('done')},2000)};
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>done(true)).catch(()=>{selectBrief();done(false)});
+  }else{selectBrief();done(false)}
+}
+function selectBrief(){
+  const el=document.getElementById('leadBrief'), sel=window.getSelection(), rng=document.createRange();
+  rng.selectNodeContents(el); sel.removeAllRanges(); sel.addRange(rng);
+}
+
 /* ── Intelligence briefing ── */
 function renderPatterns(rows,cancelled,active,daysList,cancelRate,riskDebt){
   const grid=document.getElementById('briefGrid');
@@ -996,20 +1302,20 @@ function renderTableRows(tbodyId,data,rowFn){document.getElementById(tbodyId).in
 
 /* ── Sort ── */
 function sortTbl(tblId,colIdx){
-  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData,tblZip:()=>zipTableData};
+  const dataMap={tblAgent:()=>agentTableData,tblState:()=>stateTableData,tblZip:()=>zipTableData,tblBestZip:()=>bestZipData,tblUntapped:()=>untappedData};
   const data=dataMap[tblId]?.(); if(!data)return;
   if(!sortState[tblId])sortState[tblId]={col:-1,dir:1};
   const st=sortState[tblId];
   st.dir=st.col===colIdx?-st.dir:1; st.col=colIdx;
-  const keysMap={tblAgent:['name','enr','active','can','rate'],tblState:['name','enr','active','can','rate'],tblZip:['zip','state','enr','active','can','rate']};
+  const keysMap={tblAgent:['name','enr','active','can','rate'],tblState:['name','enr','active','can','rate'],tblZip:['zip','state','enr','active','can','rate'],tblBestZip:['zip','state','enr','active','can','rate'],tblUntapped:['zip','state','near','nearRate','region','regionRate']};
   const keys=keysMap[tblId];
   data.sort((a,b)=>{const av=a[keys[colIdx]],bv=b[keys[colIdx]];return typeof av==='string'?av.localeCompare(bv)*st.dir:(av-bv)*st.dir});
   document.querySelectorAll(`[id^="si-${tblId}-"]`).forEach(el=>{el.textContent='';el.classList.remove('active')});
   const si=document.getElementById(`si-${tblId}-${colIdx}`);
   if(si){si.textContent=st.dir>0?' ▲':' ▼';si.classList.add('active')}
-  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody',tblZip:'tblZipBody'};
+  const tbodyMap={tblAgent:'tblAgentBody',tblState:'tblStateBody',tblZip:'tblZipBody',tblBestZip:'tblBestZipBody',tblUntapped:'tblUntappedBody'};
   const stdRowFn=r=>`<td>${r.name}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`;
-  const rowFns={tblAgent:stdRowFn,tblState:stdRowFn,tblZip:zipRowFn};
+  const rowFns={tblAgent:stdRowFn,tblState:stdRowFn,tblZip:zipRowFn,tblBestZip:zipRowFn,tblUntapped:untappedRowFn};
   renderTableRows(tbodyMap[tblId],data,rowFns[tblId]);
 }
 

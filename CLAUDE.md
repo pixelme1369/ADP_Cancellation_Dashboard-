@@ -42,7 +42,7 @@ The dashboard is a "Cancellation Command Center": a sticky command bar (brand, l
 | 02 COHORT TREND | Two **single-axis** charts (no dual-axis): grouped enroll/cancel volume bars + a separate cancel-rate % line |
 | 03 TIMING & SURVIVAL | Days-to-cancellation histogram + two callouts (early exits, median), and a cumulative-cancellation % curve |
 | 04 SEGMENT RISK | Cancel rate by credit band + by enrolled-debt band (ordinal blue ramps), state × debt heatmap (top 10, green→amber→red), and sortable state table |
-| 05 GEOGRAPHY | Zip-code horizontal bar chart (top 20 by cancel rate, min 3 enrollments/zip, labelled with state), auto-sized height, + full-width sortable zip breakdown table (zip, state, enrolled, active, cancelled, rate) |
+| 05 GEOGRAPHY | Zip-code horizontal bar chart (top 20 by cancel rate, labelled with state), auto-sized height, + full-width sortable zip breakdown table (zip, state, enrolled, active, cancelled, rate). A **Min enrollments / zip** control in the module header (number input + 3/10/25/50 presets, default 3) sets the threshold for both the chart and the table |
 | 06 SOURCE & CAMPAIGN | Campaign/source inline horizontal bars, color-coded by cancel rate |
 | 07 TEAM PERFORMANCE | Agent horizontal bar chart (auto-sized height) + sortable agent rankings table |
 | 08 INTELLIGENCE BRIEFING | 4 flagged narrative cards (state / timing / team / portfolio) with colored left borders |
@@ -58,6 +58,7 @@ The dashboard is a "Cancellation Command Center": a sticky command bar (brand, l
 - `rawRows` holds all parsed CSV rows; `filteredRows` holds the current slice; filters re-run `renderDashboard(rows)`
 - `parseDate(s)` — handles `M/D/YY`, `M/D/YYYY`, and ISO formats; returns a `Date` or `null`
 - `zip5(z)` — normalises a zip code to its first 5 digits (collapses `ZIP+4` values like `75001-1234` into `75001`)
+- `zipMinEnr()` — reads the `#f_zipmin` control (clamped to >= 1, default 3); `renderZipChart()` and `renderZipTable()` both filter on it, and `renderZipViews()` re-renders just those two from `filteredRows` when it changes
 - `isCancelled(r)` — single source of truth for "has a non-empty Cordoba Dropped Date"
 - `cleanH(h)` — strips BOM/zero-width chars (U+200B, U+200C, U+200D, U+FEFF, U+00A0) but NOT regular spaces
 - Chart.js is themed once via `Chart.defaults`; per-chart axis defaults live in the `AX` object and colors in `C`

@@ -116,6 +116,12 @@ body{
 .mod-num{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.1em;background:rgba(57,135,229,.1);border:1px solid rgba(57,135,229,.22);padding:3px 9px;border-radius:6px}
 .mod-title{font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--text2)}
 .mod-rule{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.mod-ctl{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mod-ctl label{font-size:10px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted);font-weight:700}
+.mod-ctl input{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 9px;border-radius:8px;font-size:13px;font-family:var(--mono);outline:none;transition:.15s;width:78px}
+.mod-ctl input:focus{border-color:var(--blue);background:var(--surface3)}
+.mod-ctl .mod-ctl-preset{background:transparent;border:1px solid var(--border2);color:var(--text2);padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;transition:.15s}
+.mod-ctl .mod-ctl-preset:hover{border-color:var(--blue);color:var(--text)}
 
 /* ── KPI vitals ── */
 .vitals{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
@@ -387,15 +393,16 @@ table.dash-tbl tr:hover td{background:rgba(57,135,229,.05)}
 
   <!-- GEOGRAPHY -->
   <div class="mod" id="sec-geo">
-    <div class="mod-head"><span class="mod-num">05</span><span class="mod-title">Geography</span><span class="mod-rule"></span></div>
+    <div class="mod-head"><span class="mod-num">05</span><span class="mod-title">Geography</span><span class="mod-rule"></span>
+      <span class="mod-ctl"><label for="f_zipmin">Min enrollments / zip</label><input type="number" id="f_zipmin" min="1" step="1" value="3" autocomplete="off"><button type="button" class="mod-ctl-preset" data-zipmin="3">3</button><button type="button" class="mod-ctl-preset" data-zipmin="10">10</button><button type="button" class="mod-ctl-preset" data-zipmin="25">25</button><button type="button" class="mod-ctl-preset" data-zipmin="50">50</button></span></div>
     <div class="card">
       <div class="card-title" id="f6-title">Cancel rate by zip code</div>
-      <div class="card-sub">Top 20 zips with 3+ enrollments, ranked worst-first. Color flags severity.</div>
+      <div class="card-sub" id="f6-sub">Top 20 zips with 3+ enrollments, ranked worst-first. Color flags severity.</div>
       <div class="chart-wrap"><canvas id="chartZip"></canvas><div class="chart-empty-msg" id="chartZip-empty" style="display:none"></div></div>
     </div>
     <div class="card" style="margin-top:16px">
       <div class="card-title">Zip code breakdown</div>
-      <div class="card-sub">Sortable — click any column header.</div>
+      <div class="card-sub" id="tblZip-sub">Zips with 3+ enrollments. Sortable — click any column header.</div>
       <div class="tbl-wrap"><table class="dash-tbl" id="tblZip"><thead><tr>
         <th onclick="sortTbl('tblZip',0)">Zip Code<span class="sort-icon" id="si-tblZip-0"></span></th>
         <th onclick="sortTbl('tblZip',1)">State<span class="sort-icon" id="si-tblZip-1"></span></th>
@@ -546,9 +553,19 @@ function initFilters(){
   if(maxDate) document.getElementById('f_to').placeholder=maxDate;
 
   ['f_from','f_to','f_state','f_agent','f_status'].forEach(id=>document.getElementById(id).addEventListener('change',applyFilters));
+
+  /* Zip minimum-enrollment threshold — re-renders only the geography views */
+  const fZipMin=document.getElementById('f_zipmin');
+  fZipMin.value=3;
+  if(!fZipMin.dataset.bound){
+    fZipMin.dataset.bound='1';
+    fZipMin.addEventListener('input',renderZipViews);
+    document.querySelectorAll('.mod-ctl-preset').forEach(b=>b.addEventListener('click',()=>{fZipMin.value=b.dataset.zipmin;renderZipViews()}));
+  }
   document.getElementById('btnReset').addEventListener('click',()=>{
     ['f_from','f_to'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('f_state').value=''; document.getElementById('f_agent').value=''; document.getElementById('f_status').value='';
+    document.getElementById('f_zipmin').value=3;
     renderDashboard(rawRows);
   });
 }
@@ -852,20 +869,38 @@ function renderAgentChart(rows){
   });
 }
 
+/* ── Zip minimum-enrollment threshold (shared by zip chart + zip table) ── */
+function zipMinEnr(){
+  const el=document.getElementById('f_zipmin');
+  const n=parseInt(el&&el.value,10);
+  return (isNaN(n)||n<1)?1:n;
+}
+function renderZipViews(){
+  renderZipChart(filteredRows);
+  renderZipTable(filteredRows);
+}
+
 /* ── Zip code chart ── */
 function renderZipChart(rows){
   destroyChart('chartZip'); chartEmpty('chartZip','');
-  if(!colMap.zipCode){chartEmpty('chartZip','No zip code column detected');return}
+  const setZipHead=(t,sub)=>{document.getElementById('f6-title').textContent=t;document.getElementById('f6-sub').textContent=sub};
+  if(!colMap.zipCode){setZipHead('Cancel rate by zip code','No zip code column detected in CSV.');chartEmpty('chartZip','No zip code column detected');return}
   const zipMap={};
   rows.forEach(r=>{const z=zip5(r[colMap.zipCode]);if(!z)return;if(!zipMap[z])zipMap[z]={enr:0,can:0,state:(r[colMap.state]||'').trim()};zipMap[z].enr++;if(isCancelled(r))zipMap[z].can++});
-  const entries=Object.entries(zipMap).filter(([,v])=>v.enr>=3).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr)).slice(0,20);
-  if(!entries.length){chartEmpty('chartZip','Insufficient zip code data (need 3+ enrollments per zip)');return}
+  const minEnr=zipMinEnr();
+  const entries=Object.entries(zipMap).filter(([,v])=>v.enr>=minEnr).sort((a,b)=>(b[1].can/b[1].enr)-(a[1].can/a[1].enr)).slice(0,20);
+  if(!entries.length){
+    setZipHead('No zip meets the minimum enrollment threshold',`Threshold is ${minEnr}+ enrollments per zip — lower it to see results.`);
+    chartEmpty('chartZip',`No zip has ${minEnr}+ enrollments in the current selection`);return}
   const labels=entries.map(([z,v])=>v.state?`${z} (${v.state})`:z);
   const rates=entries.map(([,v])=>+(v.can/v.enr*100).toFixed(1));
   const counts=entries.map(([,v])=>v.enr);
   document.getElementById('chartZip').style.height=Math.max(240,labels.length*30)+'px';
   const [worstZip,worstV]=entries[0];
-  document.getElementById('f6-title').textContent=`Zip ${worstZip}${worstV.state?' ('+worstV.state+')':''} leads cancellations (${rates[0]}%) — ${entries.length} zips compared`;
+  const nZip=entries.length, zipWord=nZip===1?'zip':'zips';
+  setZipHead(
+    `Zip ${worstZip}${worstV.state?' ('+worstV.state+')':''} leads cancellations (${rates[0]}%) — ${nZip} ${zipWord} compared`,
+    `${nZip===1?'The only zip':'Top '+nZip+' zips'} with ${minEnr}+ enrollments, ranked worst-first. Color flags severity.`);
   const colors=rates.map(r=>r>=40?C.red:r>=25?C.amber:C.green);
   charts.chartZip=new Chart(document.getElementById('chartZip'),{
     type:'bar',
@@ -950,7 +985,10 @@ function renderZipTable(rows){
   if(!colMap.zipCode){document.getElementById('tblZipBody').innerHTML='<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip code column</td></tr>';return}
   const map={};
   rows.forEach(r=>{const z=zip5(r[colMap.zipCode]);if(!z)return;if(!map[z])map[z]={enr:0,active:0,can:0,state:(r[colMap.state]||'').trim()};map[z].enr++;if(isCancelled(r))map[z].can++;else map[z].active++});
-  zipTableData=Object.entries(map).map(([zip,v])=>({zip,state:v.state,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0})).sort((a,b)=>b.rate-a.rate);
+  const minEnr=zipMinEnr();
+  zipTableData=Object.entries(map).filter(([,v])=>v.enr>=minEnr).map(([zip,v])=>({zip,state:v.state,enr:v.enr,active:v.active,can:v.can,rate:v.enr?v.can/v.enr:0})).sort((a,b)=>b.rate-a.rate);
+  document.getElementById('tblZip-sub').textContent=`Zips with ${minEnr}+ enrollments — ${zipTableData.length} ${zipTableData.length===1?'zip':'zips'} shown. Sortable — click any column header.`;
+  if(!zipTableData.length){document.getElementById('tblZipBody').innerHTML=`<tr><td colspan="6" style="color:var(--muted);text-align:center">No zip has ${minEnr}+ enrollments in the current selection</td></tr>`;return}
   renderTableRows('tblZipBody',zipTableData,zipRowFn);
 }
 const zipRowFn=r=>`<td>${r.zip}</td><td>${r.state||'—'}</td><td>${r.enr}</td><td>${r.active}</td><td>${r.can}</td><td>${rateBadge(r.rate)}</td>`;
